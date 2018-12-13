@@ -18,13 +18,25 @@ namespace EmpireAttackServer
 
         #region Private Methods
 
+        /// <summary>
+        /// Programm entry
+        /// </summary>
+        /// <param name="args"></param>
         private static void Main(string[] args)
         {
+            //Add Handler for application exit etc to free bound ressources
+            AppDomain.CurrentDomain.ProcessExit += new EventHandler(OnProcessExit);
+
             //TODO: Specify args for startup
             gameInstance = new Game(10);
             SetUpUpdate();
 
             Console.ReadLine();
+        }
+
+        private static void OnProcessExit(object sender, EventArgs e)
+        {
+            Console.WriteLine("Shutting down Server...");
         }
 
         private static void OnUpdate(Object source, ElapsedEventArgs e)
