@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Timers;
+using EmpireAttackServer.TileMap;
 
 namespace EmpireAttackServer
 {
@@ -24,6 +25,9 @@ namespace EmpireAttackServer
         /// <param name="args"></param>
         private static void Main(string[] args)
         {
+            //TEST REMOVE ASAP
+            MapPNGImport map = new MapPNGImport(AppDomain.CurrentDomain.BaseDirectory +@"/Map.png");
+
             //Add Handler for application exit etc to free bound ressources
             AppDomain.CurrentDomain.ProcessExit += new EventHandler(OnProcessExit);
 
@@ -41,9 +45,9 @@ namespace EmpireAttackServer
 
         private static void OnUpdate(Object source, ElapsedEventArgs e)
         {
-            Console.WriteLine("Update at {0:HH:mm:ss.fff}", e.SignalTime);
+            //Console.WriteLine("Update at {0:HH:mm:ss.fff}", e.SignalTime);
             gameInstance.Update();
-            Console.WriteLine("Update took {0} ms", (DateTime.Now - e.SignalTime));
+            //Console.WriteLine("Update took {0} ms", (DateTime.Now - e.SignalTime));
         }
 
         private static void SetUpUpdate()

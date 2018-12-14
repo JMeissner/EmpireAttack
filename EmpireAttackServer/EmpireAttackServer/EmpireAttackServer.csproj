@@ -37,6 +37,7 @@
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
+    <Reference Include="System.Drawing" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
@@ -51,6 +52,9 @@
     <Compile Include="Networking\NetworkMessages\IGameMessage.cs" />
     <Compile Include="ServerMain.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="TileMap\IMap.cs" />
+    <Compile Include="TileMap\MapBase.cs" />
+    <Compile Include="TileMap\MapPNGImport.cs" />
     <Compile Include="TileMap\Tile.cs" />
   </ItemGroup>
   <ItemGroup>
