@@ -52,6 +52,7 @@
     <Compile Include="Networking\NetworkMessages\IGameMessage.cs" />
     <Compile Include="ServerMain.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Networking\ServerNetworkManager.cs" />
     <Compile Include="TileMap\IMap.cs" />
     <Compile Include="TileMap\MapBase.cs" />
     <Compile Include="TileMap\MapPNGImport.cs" />

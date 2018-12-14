@@ -17,6 +17,12 @@ namespace EmpireAttackServer
 
         #endregion Private Fields
 
+        #region Public Fields
+
+        public static int ServerTicks;
+
+        #endregion Public Fields
+
         #region Private Methods
 
         /// <summary>
@@ -26,7 +32,7 @@ namespace EmpireAttackServer
         private static void Main(string[] args)
         {
             //TEST REMOVE ASAP
-            MapPNGImport map = new MapPNGImport(AppDomain.CurrentDomain.BaseDirectory +@"/Map.png");
+            MapPNGImport map = new MapPNGImport(AppDomain.CurrentDomain.BaseDirectory + @"/Map.png");
 
             //Add Handler for application exit etc to free bound ressources
             AppDomain.CurrentDomain.ProcessExit += new EventHandler(OnProcessExit);
@@ -45,6 +51,7 @@ namespace EmpireAttackServer
 
         private static void OnUpdate(Object source, ElapsedEventArgs e)
         {
+            ServerTicks += 1;
             //Console.WriteLine("Update at {0:HH:mm:ss.fff}", e.SignalTime);
             //gameInstance.Update();
             //Console.WriteLine("Update took {0} ms", (DateTime.Now - e.SignalTime));
@@ -54,6 +61,9 @@ namespace EmpireAttackServer
         {
             //TODO: Map initialization
             //TODO: Server startup sequence
+
+            ServerTicks = 0;
+            gameInstance.Initialize(1);
 
             //Setup Update Routine timer to update every 500ms
             updateTimer = new System.Timers.Timer(500);

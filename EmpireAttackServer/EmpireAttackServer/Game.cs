@@ -12,10 +12,9 @@ namespace EmpireAttackServer
         #region Public Fields
 
         public List<String> Factions;
-        public int MaxPlayers;
-        public Dictionary<UInt64, String> PlayerFaction;
-
         public MapBase map;
+        public int MaxPlayers;
+        public Dictionary<long, String> PlayerFaction;
 
         #endregion Public Fields
 
@@ -32,7 +31,7 @@ namespace EmpireAttackServer
 
         public void Initialize(int mapLoadType)
         {
-            if(mapLoadType == 1)
+            if (mapLoadType == 1)
             {
                 map = new MapPNGImport(AppDomain.CurrentDomain.BaseDirectory + @"/Map.png");
             }

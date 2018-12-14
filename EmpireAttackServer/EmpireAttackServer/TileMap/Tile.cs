@@ -21,6 +21,8 @@ namespace EmpireAttackServer
 
         #endregion Public Properties
 
+        #region Public Constructors
+
         public Tile(TileType type)
         {
             this.Faction = "None";
@@ -28,10 +30,14 @@ namespace EmpireAttackServer
             this.Type = type;
         }
 
+        #endregion Public Constructors
+
+        #region Public Methods
+
         public string GetShortType()
         {
             string stype = "";
-            switch(Type)
+            switch (Type)
             {
                 case TileType.Normal: stype = "N"; break;
                 case TileType.Water: stype = "W"; break;
@@ -42,5 +48,7 @@ namespace EmpireAttackServer
             }
             return stype;
         }
+
+        #endregion Public Methods
     }
 }
