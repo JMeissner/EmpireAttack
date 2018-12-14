@@ -1,4 +1,5 @@
-﻿using System;
+﻿using EmpireAttackServer.TileMap;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -14,6 +15,8 @@ namespace EmpireAttackServer
         public int MaxPlayers;
         public Dictionary<UInt64, String> PlayerFaction;
 
+        public MapBase map;
+
         #endregion Public Fields
 
         #region Public Constructors
@@ -27,12 +30,19 @@ namespace EmpireAttackServer
 
         #region Public Methods
 
-        public void Initialize()
+        public void Initialize(int mapLoadType)
         {
+            if(mapLoadType == 1)
+            {
+                map = new MapPNGImport(AppDomain.CurrentDomain.BaseDirectory + @"/Map.png");
+            }
         }
 
         public void Update()
         {
+            //Update Map population
+            map.UpdateMapPopulation();
+            //TODO: Send update information
         }
 
         #endregion Public Methods

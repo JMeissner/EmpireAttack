@@ -8,16 +8,16 @@ namespace EmpireAttackServer.TileMap
 {
     public interface IMap
     {
-        bool occupyTile(int x, int y);
+        bool OccupyTile(int x, int y);
 
-        void getPopulation(string faction);
+        void GetPopulation(string faction);
 
-        bool canOccupyTile(int x, int y);
+        bool CanOccupyTile(int x, int y);
 
-        bool isConnected(int x, int y);
+        bool IsConnected(int x, int y);
 
-        void addPopulation(int x, int y, int amount);
+        void AddPopulation(int x, int y, int amount);
 
-        void updateMapPopulation();
+        void UpdateMapPopulation();
     }
 }

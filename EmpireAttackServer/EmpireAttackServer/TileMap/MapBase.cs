@@ -15,22 +15,22 @@ namespace EmpireAttackServer.TileMap
 
         }
 
-        public void addPopulation(int x, int y, int amount)
+        public void AddPopulation(int x, int y, int amount)
         {
             throw new NotImplementedException();
         }
 
-        public bool canOccupyTile(int x, int y)
+        public bool CanOccupyTile(int x, int y)
         {
             throw new NotImplementedException();
         }
 
-        public void getPopulation(string faction)
+        public void GetPopulation(string faction)
         {
             throw new NotImplementedException();
         }
 
-        public bool isConnected(int x, int y)
+        public bool IsConnected(int x, int y)
         {
             bool isconnected = false;
             if (tileMap[x+1][y].Faction.Equals(tileMap[x][y].Faction)) { isconnected = true; }
@@ -40,12 +40,12 @@ namespace EmpireAttackServer.TileMap
             return isconnected;
         }
 
-        public bool occupyTile(int x, int y)
+        public bool OccupyTile(int x, int y)
         {
             throw new NotImplementedException();
         }
 
-        public void updateMapPopulation()
+        public void UpdateMapPopulation()
         {
             for(int i = 0; i < tileMap.Length; i++)
             {
@@ -53,7 +53,7 @@ namespace EmpireAttackServer.TileMap
                 {
                     if(!tileMap[i][j].Faction.Equals("None"))
                     {
-                        if (isConnected(i, j))
+                        if (IsConnected(i, j))
                         {
                             tileMap[i][j].Population += 1;
                         }

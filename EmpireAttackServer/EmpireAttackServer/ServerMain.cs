@@ -46,7 +46,7 @@ namespace EmpireAttackServer
         private static void OnUpdate(Object source, ElapsedEventArgs e)
         {
             //Console.WriteLine("Update at {0:HH:mm:ss.fff}", e.SignalTime);
-            gameInstance.Update();
+            //gameInstance.Update();
             //Console.WriteLine("Update took {0} ms", (DateTime.Now - e.SignalTime));
         }
 
