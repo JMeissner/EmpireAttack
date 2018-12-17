@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Timers;
 using EmpireAttackServer.TileMap;
+using EmpireAttackServer.Networking;
 
 namespace EmpireAttackServer
 {
@@ -13,6 +14,7 @@ namespace EmpireAttackServer
         #region Private Fields
 
         private static Game gameInstance;
+        private static ServerNetworkManager server;
         private static Timer updateTimer;
 
         #endregion Private Fields
@@ -37,7 +39,7 @@ namespace EmpireAttackServer
             //Add Handler for application exit etc to free bound ressources
             AppDomain.CurrentDomain.ProcessExit += new EventHandler(OnProcessExit);
 
-            //TODO: Specify args for startup
+            //TODO: Specify args for startup -> Import Config
             gameInstance = new Game(10);
             SetUpUpdate();
 

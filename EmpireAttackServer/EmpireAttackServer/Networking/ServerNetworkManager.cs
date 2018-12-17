@@ -34,6 +34,7 @@ namespace EmpireAttackServer.Networking
             config.EnableMessageType(NetIncomingMessageType.Error);
             config.EnableMessageType(NetIncomingMessageType.DebugMessage);
             config.EnableMessageType(NetIncomingMessageType.ConnectionApproval);
+            config.EnableMessageType(NetIncomingMessageType.DiscoveryRequest);
 
             this.netServer = new NetServer(config);
             this.netServer.Start();
@@ -64,13 +65,22 @@ namespace EmpireAttackServer.Networking
             this.netServer.Recycle(im);
         }
 
-        public void SendMessage(IGameMessage gameMessage)
+        public void SendToAll(IGameMessage gameMessage)
         {
             NetOutgoingMessage om = this.netServer.CreateMessage();
             om.Write((byte)gameMessage.MessageType);
             gameMessage.Encode(om);
 
             this.netServer.SendToAll(om, NetDeliveryMethod.ReliableOrdered);
+        }
+
+        public void SendToClient(IGameMessage gameMessage, NetConnection clientConnection)
+        {
+            NetOutgoingMessage om = this.netServer.CreateMessage();
+            om.Write((byte)gameMessage.MessageType);
+            gameMessage.Encode(om);
+
+            this.netServer.SendMessage(om, clientConnection, NetDeliveryMethod.ReliableOrdered);
         }
 
         #endregion Public Methods

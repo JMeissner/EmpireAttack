@@ -21,7 +21,9 @@ namespace EmpireAttackServer.Networking
 
         void Recycle(NetIncomingMessage im);
 
-        void SendMessage(IGameMessage gameMessage);
+        void SendToAll(IGameMessage gameMessage);
+
+        void SendToClient(IGameMessage gameMessage, NetConnection clientIP);
 
         #endregion Public Methods
     }
