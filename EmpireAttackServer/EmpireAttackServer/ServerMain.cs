@@ -14,18 +14,39 @@ namespace EmpireAttackServer
         #region Private Fields
 
         private static Game gameInstance;
-        private static ServerNetworkManager server;
-        private static Timer updateTimer;
+        private static Timer gameTimer;
+        private static Timer serverTimer;
 
         #endregion Private Fields
 
         #region Public Fields
 
-        public static int ServerTicks;
+        public static int GameTicks;
 
         #endregion Public Fields
 
         #region Private Methods
+
+        private static void Initialize()
+        {
+            //TODO: Map initialization
+            //TODO: Server startup sequence
+
+            GameTicks = 0;
+            gameInstance.Initialize(1);
+
+            //Setup Game Update Routine timer to update every 500ms
+            gameTimer = new System.Timers.Timer(500);
+            gameTimer.Elapsed += OnGameUpdate;
+            gameTimer.AutoReset = true;
+            gameTimer.Enabled = true;
+
+            //Setup Server Update Routine timer to update every 50ms
+            serverTimer = new System.Timers.Timer(500);
+            serverTimer.Elapsed += OnServerUpdate;
+            serverTimer.AutoReset = true;
+            serverTimer.Enabled = true;
+        }
 
         /// <summary>
         /// Programm entry
@@ -41,9 +62,17 @@ namespace EmpireAttackServer
 
             //TODO: Specify args for startup -> Import Config
             gameInstance = new Game(10);
-            SetUpUpdate();
+            Initialize();
 
             Console.ReadLine();
+        }
+
+        private static void OnGameUpdate(Object source, ElapsedEventArgs e)
+        {
+            GameTicks += 1;
+            //Console.WriteLine("Update at {0:HH:mm:ss.fff}", e.SignalTime);
+            //gameInstance.Update();
+            //Console.WriteLine("Update took {0} ms", (DateTime.Now - e.SignalTime));
         }
 
         private static void OnProcessExit(object sender, EventArgs e)
@@ -51,27 +80,8 @@ namespace EmpireAttackServer
             Console.WriteLine("Shutting down Server...");
         }
 
-        private static void OnUpdate(Object source, ElapsedEventArgs e)
+        private static void OnServerUpdate(Object source, ElapsedEventArgs )
         {
-            ServerTicks += 1;
-            //Console.WriteLine("Update at {0:HH:mm:ss.fff}", e.SignalTime);
-            //gameInstance.Update();
-            //Console.WriteLine("Update took {0} ms", (DateTime.Now - e.SignalTime));
-        }
-
-        private static void SetUpUpdate()
-        {
-            //TODO: Map initialization
-            //TODO: Server startup sequence
-
-            ServerTicks = 0;
-            gameInstance.Initialize(1);
-
-            //Setup Update Routine timer to update every 500ms
-            updateTimer = new System.Timers.Timer(500);
-            updateTimer.Elapsed += OnUpdate;
-            updateTimer.AutoReset = true;
-            updateTimer.Enabled = true;
         }
 
         #endregion Private Methods

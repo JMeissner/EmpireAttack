@@ -7,14 +7,14 @@ using Lidgren.Network;
 
 namespace EmpireAttackServer.Networking.NetworkMessages
 {
-    public interface IGameMessage
+    public interface IPacket
     {
         #region Public Properties
 
         /// <summary>
         /// Gets MessageType.
         /// </summary>
-        GameMessageTypes MessageType { get; }
+        PacketTypes MessageType { get; }
 
         #endregion Public Properties
 
