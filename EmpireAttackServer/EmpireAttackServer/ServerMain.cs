@@ -6,6 +6,8 @@ using System.Threading.Tasks;
 using System.Timers;
 using EmpireAttackServer.TileMap;
 using EmpireAttackServer.Networking;
+using EmpireAttackServer.Networking.NetworkMessages;
+using Lidgren.Network;
 
 namespace EmpireAttackServer
 {
@@ -16,6 +18,11 @@ namespace EmpireAttackServer
         private static Game gameInstance;
         private static Timer gameTimer;
         private static Timer serverTimer;
+
+        // Server object
+        private static NetServer Server;
+        // Configuration object
+        private static NetPeerConfiguration Config;
 
         #endregion Private Fields
 
@@ -31,6 +38,7 @@ namespace EmpireAttackServer
         {
             //TODO: Map initialization
             //TODO: Server startup sequence
+            InitializeServer();
 
             GameTicks = 0;
             gameInstance.Initialize(1);
@@ -80,8 +88,57 @@ namespace EmpireAttackServer
             Console.WriteLine("Shutting down Server...");
         }
 
-        private static void OnServerUpdate(Object source, ElapsedEventArgs )
+        private static void OnServerUpdate(Object source, ElapsedEventArgs e)
         {
+            // Object that can be used to store and read messages
+            NetIncomingMessage inc;
+
+            //while loop for incoming packages
+            while ((inc = Server.ReadMessage()) != null)
+            {
+                switch (inc.MessageType)
+                {
+                    case NetIncomingMessageType.ConnectionApproval:
+
+                        // Read the first byte of the packet
+                        // ( Enums can be casted to bytes, so it be used to make bytes human readable )
+                        if (inc.ReadByte() == (byte)PacketTypes.LOGIN)
+                        {
+                        }
+                        break;
+                    case NetIncomingMessageType.Data:
+
+                        if (inc.ReadByte() == (byte)PacketTypes.TEST)
+                        {
+
+                        }
+                        break;
+                }
+            }
+        }
+
+        private static void InitializeServer()
+        {
+            // Create new instance of configs. Parameter is "application Id". It has to be same on client and server.
+            Config = new NetPeerConfiguration("game");
+
+            // Set server port
+            Config.Port = 14242;
+
+            // Max client amount
+            Config.MaximumConnections = 200;
+
+            // Enable New messagetype. Explained later
+            Config.EnableMessageType(NetIncomingMessageType.ConnectionApproval);
+
+            // Create new server based on the configs just defined
+            Server = new NetServer(Config);
+
+            // Start it
+            Server.Start();
+
+            // Console
+            Console.WriteLine("Server Started");
         }
 
         #endregion Private Methods
