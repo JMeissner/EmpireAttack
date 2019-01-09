@@ -16,6 +16,7 @@ namespace EmpireAttackServer
         #region Public Properties
 
         public string Faction { get; set; }
+        public bool IsConnected { get; set; }
         public int Population { get; set; }
         public TileType Type { get; set; }
 

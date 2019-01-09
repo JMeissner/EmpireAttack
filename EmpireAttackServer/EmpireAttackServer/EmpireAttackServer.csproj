@@ -47,10 +47,16 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Game.cs" />
+    <Compile Include="Networking\NetworkMessages\LoginPacket.cs" />
     <Compile Include="Networking\NetworkMessages\PacketTypes.cs" />
     <Compile Include="Networking\NetworkMessages\IPacket.cs" />
+    <Compile Include="Networking\ServerManager.cs" />
+    <Compile Include="Players\Faction.cs" />
+    <Compile Include="Players\Player.cs" />
+    <Compile Include="Players\PlayerManager.cs" />
     <Compile Include="ServerMain.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="TileMap\2DBFS.cs" />
     <Compile Include="TileMap\2DDFS.cs" />
     <Compile Include="TileMap\IMap.cs" />
     <Compile Include="TileMap\MapBase.cs" />
