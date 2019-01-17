@@ -1,4 +1,5 @@
-﻿using EmpireAttackServer.TileMap;
+﻿using EmpireAttackServer.Players;
+using EmpireAttackServer.TileMap;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -11,18 +12,15 @@ namespace EmpireAttackServer
     {
         #region Public Fields
 
-        public List<String> Factions;
         public MapBase map;
-        public int MaxPlayers;
-        public Dictionary<long, String> PlayerFaction;
+        private Dictionary<Faction, Point> Capitals;
 
         #endregion Public Fields
 
         #region Public Constructors
 
-        public Game(int maxPlayers)
+        public Game()
         {
-            this.MaxPlayers = maxPlayers;
         }
 
         #endregion Public Constructors
@@ -31,10 +29,12 @@ namespace EmpireAttackServer
 
         public void Initialize(int mapLoadType)
         {
+            //Load Map
             if (mapLoadType == 1)
             {
                 map = new MapPNGImport(AppDomain.CurrentDomain.BaseDirectory + @"/Map.png");
             }
+            //Set Capitals
         }
 
         public void Update()
@@ -45,5 +45,29 @@ namespace EmpireAttackServer
         }
 
         #endregion Public Methods
+
+        #region Private Structs
+
+        private struct Point
+        {
+            #region Private Fields
+
+            public int x;
+            public int y;
+
+            #endregion Private Fields
+
+            #region Public Constructors
+
+            public Point(int x, int y)
+            {
+                this.x = x;
+                this.y = y;
+            }
+
+            #endregion Public Constructors
+        }
+
+        #endregion Private Structs
     }
 }

@@ -1,4 +1,5 @@
-﻿using System;
+﻿using EmpireAttackServer.Players;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -15,8 +16,9 @@ namespace EmpireAttackServer
     {
         #region Public Properties
 
-        public string Faction { get; set; }
+        public Faction Faction { get; set; }
         public bool IsConnected { get; set; }
+        public bool IsVisited { get; set; }
         public int Population { get; set; }
         public TileType Type { get; set; }
 
@@ -26,7 +28,7 @@ namespace EmpireAttackServer
 
         public Tile(TileType type)
         {
-            this.Faction = "None";
+            this.Faction = Faction.NONE;
             this.Population = 0;
             this.Type = type;
         }

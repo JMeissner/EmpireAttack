@@ -11,6 +11,8 @@ namespace EmpireAttackServer.Players
     /// </summary>
     public enum Faction
     {
+        NONE,
+
         Eagles,
 
         Itallica,
