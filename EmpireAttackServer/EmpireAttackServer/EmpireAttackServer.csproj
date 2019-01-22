@@ -50,6 +50,7 @@
     <Compile Include="Networking\NetworkMessages\LoginPacket.cs" />
     <Compile Include="Networking\NetworkMessages\PacketTypes.cs" />
     <Compile Include="Networking\NetworkMessages\IPacket.cs" />
+    <Compile Include="Networking\NetworkMessages\WorldUpdatePacket.cs" />
     <Compile Include="Networking\ServerManager.cs" />
     <Compile Include="Players\Faction.cs" />
     <Compile Include="Players\Player.cs" />

@@ -13,6 +13,8 @@ namespace EmpireAttackServer.Networking.NetworkMessages
     {
         LOGIN,
 
+        WORLDUPDATE,
+
         TEST
     }
 }

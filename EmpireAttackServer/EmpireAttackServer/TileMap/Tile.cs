@@ -33,6 +33,13 @@ namespace EmpireAttackServer
             this.Type = type;
         }
 
+        public Tile(Faction faction, int population, TileType type)
+        {
+            this.Faction = faction;
+            this.Population = population;
+            this.Type = type;
+        }
+
         #endregion Public Constructors
 
         #region Public Methods
