@@ -22,7 +22,7 @@ namespace EmpireAttackServer
         private static Timer gameTimer;
 
         // Server object
-        private static NetServer Server;
+        private static ServerManager Server;
 
         private static Timer serverTimer;
 
@@ -40,7 +40,8 @@ namespace EmpireAttackServer
         {
             //TODO: Map initialization
             //TODO: Server startup sequence
-            InitializeServer();
+            Server = new ServerManager(new Players.PlayerManager(), "EA2", 14242, 100);
+            Server.Initialize();
 
             GameTicks = 0;
             //gameInstance.Initialize(1);
@@ -56,35 +57,6 @@ namespace EmpireAttackServer
             serverTimer.Elapsed += OnServerUpdate;
             serverTimer.AutoReset = true;
             serverTimer.Enabled = true;
-        }
-
-        private static void InitializeServer()
-        {
-            // Create new instance of configs. Parameter is "application Id". It has to be same on client and server.
-            Config = new NetPeerConfiguration("game");
-
-            // Set server port
-            Config.Port = 14242;
-
-            // Max client amount
-            Config.MaximumConnections = 200;
-
-            // Enable New messagetype. Explained later
-            Config.EnableMessageType(NetIncomingMessageType.ConnectionApproval);
-
-            // Create new server based on the configs just defined
-            Server = new NetServer(Config);
-
-            // Start it
-            Server.Start();
-
-            // Console
-            Console.WriteLine("Server Started");
-            Console.WriteLine("---  CONFIGURATION  ---");
-            Console.WriteLine("> Type: game");
-            Console.WriteLine("> Port: 14242");
-            Console.WriteLine("> Max. Players: 200");
-            Console.WriteLine("--- /CONFIGURATION  ---");
         }
 
         /// <summary>
@@ -121,62 +93,7 @@ namespace EmpireAttackServer
 
         private static void OnServerUpdate(Object source, ElapsedEventArgs e)
         {
-            // Object that can be used to store and read messages
-            NetIncomingMessage inc;
-
-            //while loop for incoming packages
-            while ((inc = Server.ReadMessage()) != null)
-            {
-                switch (inc.MessageType)
-                {
-                    case NetIncomingMessageType.ConnectionApproval:
-
-                        // Read the first byte of the packet
-                        // ( Enums can be casted to bytes, so it be used to make bytes human readable )
-                        if (inc.ReadByte() == (byte)PacketTypes.LOGIN)
-                        {
-                            //TODO: Add Players to Custom Object/ Dictionary
-                            //TODO: Custom Timeout (Use systemtime)
-                            //TODO: Shoot answer back if msg is received
-                            inc.SenderConnection.Approve();
-                            string pName = inc.ReadString();
-                            Console.WriteLine("NEW PLAYER CONNECTION: " + pName + ", IP: " + inc.SenderConnection);
-
-                            //NetOutgoingMessage outmsg = Server.CreateMessage();
-                            //outmsg.Write((byte)PacketTypes.TEST);
-                            //outmsg.Write("Server says Hi!");
-
-                            //Server.SendMessage(outmsg, inc.SenderConnection, NetDeliveryMethod.ReliableOrdered, 0);
-                        }
-                        break;
-
-                    case NetIncomingMessageType.Data:
-
-                        if (inc.ReadByte() == (byte)PacketTypes.TEST)
-                        {
-                            //TODO: Find Player Obj
-                            //TODO: Add Timer for timeout
-                            //TODO: Send response
-                            string msg = inc.ReadString();
-                            Console.WriteLine("PLAYERMSG: " + msg + ", FROM: " + inc.SenderConnection);
-
-                            NetOutgoingMessage outmsg = Server.CreateMessage();
-                            outmsg.Write((byte)PacketTypes.TEST);
-                            outmsg.Write("Server answer - " + GameTicks);
-
-                            Server.SendMessage(outmsg, Server.Connections, NetDeliveryMethod.ReliableOrdered, 0);
-                        }
-                        break;
-
-                    case NetIncomingMessageType.StatusChanged:
-                        Console.WriteLine("STATUS: " + (NetConnectionStatus)inc.ReadByte() + ", FOR: " + inc.SenderConnection);
-                        break;
-
-                    default:
-                        Console.WriteLine("ERROR! --- THIS TYPE OF MESSAGE IS NOT SUPPORTED: " + inc.MessageType.ToString() + ", " + inc.ReadString());
-                        break;
-                }
-            }
+            Server.OnUpdate();
         }
 
         #endregion Private Methods

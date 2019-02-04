@@ -144,9 +144,9 @@ namespace EmpireAttackServer.Networking
                 //TODO: Add Players to Custom Object/ Dictionary
                 //TODO: Custom Timeout (Use systemtime)
                 //TODO: Shoot answer back if msg is received
+                LoginPacket lp = new LoginPacket(inc);
                 inc.SenderConnection.Approve();
-                string pName = inc.ReadString();
-                Console.WriteLine("NEW PLAYER CONNECTION: " + pName + ", IP: " + inc.SenderConnection);
+                Console.WriteLine("NEW PLAYER CONNECTION: " + lp.PlayerName + ", AS: " + (Faction)lp.Faction + ", IP: " + lp.IP);
             }
         }
 
