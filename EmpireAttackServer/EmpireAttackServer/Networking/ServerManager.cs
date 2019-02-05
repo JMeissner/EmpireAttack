@@ -3,8 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Lidgren.Network;
-using EmpireAttackServer.Networking.NetworkMessages;
 using EmpireAttackServer.Players;
+using EmpireAttackServer.Shared;
 
 namespace EmpireAttackServer.Networking
 {
@@ -171,7 +171,7 @@ namespace EmpireAttackServer.Networking
                     //Remove Player from PM
                     break;
             }
-            Console.WriteLine("STATUS: " + (NetConnectionStatus)inc.ReadByte() + ", FOR: " + inc.SenderConnection);
+            Console.WriteLine("STATUS: " + status + ", FOR: " + inc.SenderConnection);
         }
 
         #endregion Private Methods

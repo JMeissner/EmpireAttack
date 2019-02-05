@@ -1,12 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Lidgren.Network;
-using EmpireAttackServer.Players;
+﻿using Lidgren.Network;
 
-namespace EmpireAttackServer.Networking.NetworkMessages
+namespace EmpireAttackServer.Shared
 {
     class LoginPacket : IPacket
     {

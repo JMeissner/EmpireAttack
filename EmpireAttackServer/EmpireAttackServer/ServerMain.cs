@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using System.Timers;
 using EmpireAttackServer.TileMap;
 using EmpireAttackServer.Networking;
-using EmpireAttackServer.Networking.NetworkMessages;
+using EmpireAttackServer.Shared;
 using Lidgren.Network;
 
 namespace EmpireAttackServer

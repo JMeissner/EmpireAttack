@@ -1,4 +1,5 @@
 ﻿using EmpireAttackServer.Players;
+using EmpireAttackServer.Shared;
 using EmpireAttackServer.TileMap;
 using System;
 using System.Collections.Generic;
