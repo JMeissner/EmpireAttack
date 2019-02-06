@@ -41,10 +41,14 @@ namespace EmpireAttackServer
             //TODO: Map initialization
             //TODO: Server startup sequence
             Server = new ServerManager("EA2", 14242, 100);
+            Server.PlayerConnected += OnPlayerConnected;
+            Server.PlayerJoined += OnPlayerJoined;
+            Server.PlayerLeft += OnPlayerLeft;
             Server.Initialize();
 
+            //Initialize GameInstance
             GameTicks = 0;
-            //gameInstance.Initialize(1);
+            gameInstance.Initialize(1);
 
             //Setup Game Update Routine timer to update every 500ms
             gameTimer = new System.Timers.Timer(500);
@@ -72,13 +76,13 @@ namespace EmpireAttackServer
             AppDomain.CurrentDomain.ProcessExit += new EventHandler(OnProcessExit);
 
             //TODO: Specify args for startup -> Import Config
-            //gameInstance = new Game(10);
+            gameInstance = new Game();
             Initialize();
 
             Console.ReadLine();
         }
 
-        private static void OnGameUpdate(Object source, ElapsedEventArgs e)
+        private static void OnGameUpdate(Object sender, ElapsedEventArgs e)
         {
             GameTicks += 1;
             //Console.WriteLine("Update at {0:HH:mm:ss.fff}", e.SignalTime);
@@ -86,12 +90,27 @@ namespace EmpireAttackServer
             //Console.WriteLine("Update took {0} ms", (DateTime.Now - e.SignalTime));
         }
 
+        private static void OnPlayerConnected(Object sender, PlayerConnectedEventArgs e)
+        {
+            Console.WriteLine("Sending map to player...");
+
+            Server.SendMapToPlayer(e.NetConnection, gameInstance.GetTiles());
+        }
+
+        private static void OnPlayerJoined(Object sender, PlayerJoinedEventArgs e)
+        {
+        }
+
+        private static void OnPlayerLeft(Object sender, PlayerLeftEventArgs e)
+        {
+        }
+
         private static void OnProcessExit(object sender, EventArgs e)
         {
             Console.WriteLine("Shutting down Server...");
         }
 
-        private static void OnServerUpdate(Object source, ElapsedEventArgs e)
+        private static void OnServerUpdate(Object sender, ElapsedEventArgs e)
         {
             //Fast running Loop
             //Fetches Messages to the server and processes them

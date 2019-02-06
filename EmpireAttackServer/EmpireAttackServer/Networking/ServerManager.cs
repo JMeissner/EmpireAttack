@@ -112,7 +112,7 @@ namespace EmpireAttackServer.Networking
 
                             NetOutgoingMessage outmsg = Server.CreateMessage();
                             outmsg.Write((byte)PacketTypes.TEST);
-                            //outmsg.Write("Server answer - " + GameTicks);
+                            outmsg.Write("Server answer - ");
 
                             Server.SendMessage(outmsg, Server.Connections, NetDeliveryMethod.ReliableOrdered, 0);
                         }
@@ -127,6 +127,19 @@ namespace EmpireAttackServer.Networking
                         break;
                 }
             }
+        }
+
+        /// <summary>
+        /// Sends the map to the specified Player
+        /// </summary>
+        /// <param name="netConnection">Player</param>
+        /// <param name="tiles">map</param>
+        public void SendMapToPlayer(NetConnection netConnection, Tile[][] tiles)
+        {
+            WorldUpdatePacket packet = new WorldUpdatePacket(tiles);
+            NetOutgoingMessage msg = Server.CreateMessage();
+            packet.Encode(msg);
+            SendMessageToConnection(netConnection, msg);
         }
 
         #endregion Public Methods
@@ -190,6 +203,16 @@ namespace EmpireAttackServer.Networking
                     break;
             }
             Console.WriteLine("STATUS: " + status + ", FOR: " + inc.SenderConnection);
+        }
+
+        /// <summary>
+        /// Sends the Message to the clientconnection
+        /// </summary>
+        /// <param name="netConnection">clientConnection</param>
+        /// <param name="msg">Outgoing Message</param>
+        private void SendMessageToConnection(NetConnection netConnection, NetOutgoingMessage msg)
+        {
+            Server.SendMessage(msg, netConnection, NetDeliveryMethod.ReliableOrdered);
         }
 
         #endregion Private Methods
