@@ -28,6 +28,23 @@ namespace EmpireAttackServer
 
         #region Public Methods
 
+        /// <summary>
+        /// Returns the tilemap for serverupdates etc
+        /// </summary>
+        /// <returns>tilemap (2d Array of Tiles)</returns>
+        public Tile[][] GetTiles()
+        {
+            if (map != null)
+            {
+                return map.tileMap;
+            }
+            return null;
+        }
+
+        /// <summary>
+        /// Initializes the game with a specified way to load or generate the map
+        /// </summary>
+        /// <param name="mapLoadType">1=PNGImport, 2=... </param>
         public void Initialize(int mapLoadType)
         {
             //Load Map
@@ -38,6 +55,9 @@ namespace EmpireAttackServer
             //Set Capitals
         }
 
+        /// <summary>
+        /// Called every Gameupdate
+        /// </summary>
         public void Update()
         {
             //Update Map population

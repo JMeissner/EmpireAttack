@@ -40,7 +40,7 @@ namespace EmpireAttackServer
         {
             //TODO: Map initialization
             //TODO: Server startup sequence
-            Server = new ServerManager(new Players.PlayerManager(), "EA2", 14242, 100);
+            Server = new ServerManager("EA2", 14242, 100);
             Server.Initialize();
 
             GameTicks = 0;
@@ -93,6 +93,8 @@ namespace EmpireAttackServer
 
         private static void OnServerUpdate(Object source, ElapsedEventArgs e)
         {
+            //Fast running Loop
+            //Fetches Messages to the server and processes them
             Server.OnUpdate();
         }
 
