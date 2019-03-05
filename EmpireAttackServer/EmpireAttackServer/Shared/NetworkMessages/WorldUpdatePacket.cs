@@ -1,5 +1,6 @@
 ﻿using System;
-using Lidgren.Network;
+using LiteNetLib;
+using LiteNetLib.Utils;
 
 namespace EmpireAttackServer.Shared
 {
@@ -21,7 +22,7 @@ namespace EmpireAttackServer.Shared
             tiles = map;
         }
 
-        public WorldUpdatePacket(NetIncomingMessage im)
+        public WorldUpdatePacket(NetPacketReader im)
         {
             this.Decode(im);
         }
@@ -36,10 +37,10 @@ namespace EmpireAttackServer.Shared
 
         #region Public Methods
 
-        public void Decode(NetIncomingMessage im)
+        public void Decode(NetPacketReader im)
         {
             //Read Tilecount
-            Tilecount = im.ReadInt32();
+            Tilecount = im.GetInt();
             //Create Array
             tiles = new Tile[(int)Math.Sqrt(Tilecount)][];
             for (int i = 0; i < tiles.Length; i++)
@@ -51,26 +52,26 @@ namespace EmpireAttackServer.Shared
             {
                 for (int j = 0; j < tiles[0].Length; j++)
                 {
-                    Faction f = (Faction)im.ReadByte();
-                    int p = im.ReadInt32();
-                    TileType t = (TileType)im.ReadByte();
+                    Faction f = (Faction)im.GetByte();
+                    int p = im.GetInt();
+                    TileType t = (TileType)im.GetByte();
                     Tile tempTile = new Tile(f, p, t);
                     tiles[i][j] = tempTile;
                 }
             }
         }
 
-        public void Encode(NetOutgoingMessage om)
+        public void Encode(NetDataWriter om)
         {
-            om.Write((byte)PacketTypes.WORLDUPDATE);
-            om.Write(Tilecount);
+            om.Put((byte)PacketTypes.WORLDUPDATE);
+            om.Put(Tilecount);
             for (int i = 0; i < tiles.Length; i++)
             {
                 for (int j = 0; j < tiles[0].Length; j++)
                 {
-                    om.Write((Byte)tiles[i][j].Faction);
-                    om.WriteVariableInt32(tiles[i][j].Population);
-                    om.Write((Byte)tiles[i][j].Type);
+                    om.Put((Byte)tiles[i][j].Faction);
+                    om.Put(tiles[i][j].Population);
+                    om.Put((Byte)tiles[i][j].Type);
                 }
             }
         }

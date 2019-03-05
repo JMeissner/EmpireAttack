@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using EmpireAttackServer.Shared;
-using Lidgren.Network;
+using LiteNetLib;
 
 namespace EmpireAttackServer.Players
 {
@@ -26,7 +26,7 @@ namespace EmpireAttackServer.Players
 
         #region Public Methods
 
-        public bool AddPlayer(string name, Faction faction, NetConnection IP)
+        public bool AddPlayer(string name, Faction faction, NetPeer IP)
         {
             Player newp = new Player(name, IP, faction);
             if (!PlayerExists(IP))
@@ -36,7 +36,7 @@ namespace EmpireAttackServer.Players
             return false;
         }
 
-        public Player GetPlayer(NetConnection IP)
+        public Player GetPlayer(NetPeer IP)
         {
             foreach (Player p in players)
             {
@@ -48,7 +48,7 @@ namespace EmpireAttackServer.Players
             return null;
         }
 
-        public bool PlayerExists(NetConnection IP)
+        public bool PlayerExists(NetPeer IP)
         {
             foreach (Player p in players)
             {
@@ -60,7 +60,7 @@ namespace EmpireAttackServer.Players
             return false;
         }
 
-        public bool RemovePlayer(NetConnection IP)
+        public bool RemovePlayer(NetPeer IP)
         {
             foreach (Player p in players)
             {

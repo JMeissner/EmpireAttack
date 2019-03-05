@@ -1,4 +1,5 @@
-﻿using Lidgren.Network;
+﻿using LiteNetLib;
+using LiteNetLib.Utils;
 
 namespace EmpireAttackServer.Shared
 {
@@ -7,7 +8,6 @@ namespace EmpireAttackServer.Shared
         #region Public Properties
 
         public byte Faction;
-        public NetConnection IP;
         public string PlayerName;
         public PacketTypes MessageType { get { return PacketTypes.LOGIN; } private set { } }
 
@@ -15,10 +15,9 @@ namespace EmpireAttackServer.Shared
 
         #region Public Constructors
 
-        public LoginPacket(NetIncomingMessage im)
+        public LoginPacket(NetPacketReader im)
         {
             this.Decode(im);
-            this.IP = im.SenderConnection;
         }
 
         public LoginPacket(string pName, Faction Faction)
@@ -31,23 +30,17 @@ namespace EmpireAttackServer.Shared
 
         #region Public Methods
 
-        public Player CreatePlayer()
+        public void Decode(NetPacketReader im)
         {
-            Player player = new Player(PlayerName, IP, (Faction)Faction);
-            return player;
+            this.PlayerName = im.GetString();
+            this.Faction = im.GetByte();
         }
 
-        public void Decode(NetIncomingMessage im)
+        public void Encode(NetDataWriter om)
         {
-            this.PlayerName = im.ReadString();
-            this.Faction = im.ReadByte();
-        }
-
-        public void Encode(NetOutgoingMessage om)
-        {
-            om.Write((byte)PacketTypes.LOGIN);
-            om.Write(PlayerName);
-            om.Write(Faction);
+            om.Put((byte)PacketTypes.LOGIN);
+            om.Put(PlayerName);
+            om.Put(Faction);
         }
 
         #endregion Public Methods

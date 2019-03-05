@@ -15,9 +15,6 @@ namespace EmpireAttackServer
     {
         #region Private Fields
 
-        // Configuration object
-        private static NetPeerConfiguration Config;
-
         private static Game gameInstance;
         private static Timer gameTimer;
 
@@ -42,7 +39,6 @@ namespace EmpireAttackServer
             //TODO: Server startup sequence
             Server = new ServerManager("EA2", 14242, 100);
             Server.PlayerConnected += OnPlayerConnected;
-            Server.PlayerJoined += OnPlayerJoined;
             Server.PlayerLeft += OnPlayerLeft;
             Server.Initialize();
 
@@ -92,13 +88,9 @@ namespace EmpireAttackServer
 
         private static void OnPlayerConnected(Object sender, PlayerConnectedEventArgs e)
         {
-            Console.WriteLine("Sending map to player...");
+            Console.WriteLine("Sending map to player: {0}...", e.PlayerName);
 
-            Server.SendMapToPlayer(e.NetConnection, gameInstance.GetTiles());
-        }
-
-        private static void OnPlayerJoined(Object sender, PlayerJoinedEventArgs e)
-        {
+            Server.SendMapToPlayer(e.NetPeer, gameInstance.GetTiles());
         }
 
         private static void OnPlayerLeft(Object sender, PlayerLeftEventArgs e)

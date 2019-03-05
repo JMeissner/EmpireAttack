@@ -1,4 +1,4 @@
-﻿using Lidgren.Network;
+﻿using LiteNetLib;
 
 namespace EmpireAttackServer.Shared
 {
@@ -7,14 +7,14 @@ namespace EmpireAttackServer.Shared
         #region Public Fields
 
         public Faction faction;
-        public NetConnection IP;
+        public NetPeer IP;
         public string name;
 
         #endregion Public Fields
 
         #region Public Constructors
 
-        public Player(string name, NetConnection EndPoint, Faction faction)
+        public Player(string name, NetPeer EndPoint, Faction faction)
         {
             this.name = name;
             this.IP = EndPoint;

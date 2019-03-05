@@ -1,4 +1,5 @@
-﻿using Lidgren.Network;
+﻿using LiteNetLib;
+using LiteNetLib.Utils;
 
 namespace EmpireAttackServer.Shared
 {
@@ -21,7 +22,7 @@ namespace EmpireAttackServer.Shared
         /// <param name="im">
         /// The im.
         /// </param>
-        void Decode(NetIncomingMessage im);
+        void Decode(NetPacketReader im);
 
         /// <summary>
         /// The encode.
@@ -29,7 +30,7 @@ namespace EmpireAttackServer.Shared
         /// <param name="om">
         /// The om.
         /// </param>
-        void Encode(NetOutgoingMessage om);
+        void Encode(NetDataWriter om);
 
         #endregion Public Methods
     }

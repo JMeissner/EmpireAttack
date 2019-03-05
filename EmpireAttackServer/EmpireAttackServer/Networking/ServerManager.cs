@@ -2,9 +2,10 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using Lidgren.Network;
+using LiteNetLib;
 using EmpireAttackServer.Players;
 using EmpireAttackServer.Shared;
+using LiteNetLib.Utils;
 
 namespace EmpireAttackServer.Networking
 {
@@ -15,20 +16,16 @@ namespace EmpireAttackServer.Networking
         //App ID to connect the right versions
         private static string APPID;
 
-        // Configuration object
-        private static NetPeerConfiguration Config;
-
         //Max number of connections
         private static int MAXPLAYERS;
-
-        //Holds player objects
-        private static PlayerManager playerManager;
 
         //Port of the server
         private static int PORT;
 
-        // Server object
-        private static NetServer Server;
+        //LiteNet Objects
+        private EventBasedNetListener listener;
+
+        private NetManager server;
 
         #endregion Private Fields
 
@@ -50,29 +47,18 @@ namespace EmpireAttackServer.Networking
         /// </summary>
         public void Initialize()
         {
-            // Create new instance of configs. Parameter is "application Id". It has to be same on client and server.
-            Config = new NetPeerConfiguration(APPID);
+            //Start Server
+            listener = new EventBasedNetListener();
+            server = new NetManager(listener);
+            server.DisconnectTimeout = 5000;
+            server.Start(PORT);
 
-            // Set server port
-            Config.Port = PORT;
-
-            // Max client amount
-            Config.MaximumConnections = MAXPLAYERS;
-
-            // Enable Timeout
-            Config.ConnectionTimeout = 20.0f;
-
-            // Enable New messagetype. Explained later
-            Config.EnableMessageType(NetIncomingMessageType.ConnectionApproval);
-
-            //Set Timeout
-            Config.ConnectionTimeout = 60.0f;
-
-            // Create new server based on the configs just defined
-            Server = new NetServer(Config);
-
-            // Start it
-            Server.Start();
+            //Register Events
+            listener.ConnectionRequestEvent += OnConnectionRequestEvent;
+            listener.NetworkReceiveEvent += OnNetworkReceiveEvent;
+            listener.PeerConnectedEvent += OnPeerConnectedEvent;
+            listener.PeerDisconnectedEvent += OnPeerDisconnectedEvent;
+            listener.NetworkErrorEvent += OnNetworkErrorEvent;
 
             // Console
             Console.WriteLine("Server Started...");
@@ -88,45 +74,7 @@ namespace EmpireAttackServer.Networking
         /// </summary>
         public void OnUpdate()
         {
-            // Object that can be used to store and read messages
-            NetIncomingMessage inc;
-
-            //while loop for incoming packages
-            while ((inc = Server.ReadMessage()) != null)
-            {
-                switch (inc.MessageType)
-                {
-                    case NetIncomingMessageType.ConnectionApproval:
-                        HandleConnectionApproval(inc);
-                        break;
-
-                    case NetIncomingMessageType.Data:
-
-                        if (inc.ReadByte() == (byte)PacketTypes.TEST)
-                        {
-                            //TODO: Find Player Obj
-                            //TODO: Add Timer for timeout
-                            //TODO: Send response
-                            string msg = inc.ReadString();
-                            Console.WriteLine("PLAYERMSG: " + msg + ", FROM: " + inc.SenderConnection);
-
-                            NetOutgoingMessage outmsg = Server.CreateMessage();
-                            outmsg.Write((byte)PacketTypes.TEST);
-                            outmsg.Write("Server answer - ");
-
-                            Server.SendMessage(outmsg, Server.Connections, NetDeliveryMethod.ReliableOrdered, 0);
-                        }
-                        break;
-
-                    case NetIncomingMessageType.StatusChanged:
-                        HandleStatusChanged(inc);
-                        break;
-
-                    default:
-                        Console.WriteLine("ERROR! --- THIS TYPE OF MESSAGE IS NOT SUPPORTED: " + inc.MessageType.ToString() + ", " + inc.ReadString());
-                        break;
-                }
-            }
+            server.PollEvents();
         }
 
         /// <summary>
@@ -134,10 +82,10 @@ namespace EmpireAttackServer.Networking
         /// </summary>
         /// <param name="netConnection">Player</param>
         /// <param name="tiles">map</param>
-        public void SendMapToPlayer(NetConnection netConnection, Tile[][] tiles)
+        public void SendMapToPlayer(NetPeer netConnection, Tile[][] tiles)
         {
             WorldUpdatePacket packet = new WorldUpdatePacket(tiles);
-            NetOutgoingMessage msg = Server.CreateMessage();
+            NetDataWriter msg = new NetDataWriter();
             packet.Encode(msg);
             SendMessageToConnection(netConnection, msg);
         }
@@ -146,63 +94,87 @@ namespace EmpireAttackServer.Networking
 
         #region Private Methods
 
+        private void HandlePlayerLogin(NetPeer peer, NetPacketReader reader)
+        {
+            LoginPacket loginPacket = new LoginPacket(reader);
+            PlayerConnectedEventArgs args1 = new PlayerConnectedEventArgs();
+            args1.NetPeer = peer;
+            args1.PlayerFaction = (Faction)loginPacket.Faction;
+            args1.PlayerName = loginPacket.PlayerName;
+            OnPlayerConnected(args1);
+
+            //Console Output
+            Console.WriteLine("Player {0} login successful. Faction: {1}", loginPacket.PlayerName, (Faction)loginPacket.Faction);
+        }
+
         /// <summary>
         /// Approve connections and invoke PlayerjoinedEvent
         /// </summary>
         /// <param name="inc">Incoming Message</param>
-        private void HandleConnectionApproval(NetIncomingMessage inc)
+        private void OnConnectionRequestEvent(ConnectionRequest request)
         {
-            // Read the first byte of the packet
-            // ( Enums can be casted to bytes, so it be used to make bytes human readable )
-            if (inc.ReadByte() == (byte)PacketTypes.LOGIN)
+            Console.WriteLine("CONNECTION REQUEST FROM: {0}", request.RemoteEndPoint.ToString());
+            if (server.PeersCount < MAXPLAYERS)
             {
-                //TODO: Add Players to Custom Object/ Dictionary
-                //TODO: Custom Timeout (Use systemtime)
-                //TODO: Shoot answer back if msg is received
-                LoginPacket lp = new LoginPacket(inc);
-                inc.SenderConnection.Approve();
-                Console.WriteLine("NEW PLAYER CONNECTING: " + lp.PlayerName + ", AS: " + (Faction)lp.Faction + ", IP: " + lp.IP);
-
-                //Invoke Event for GameClass & PlayerManager
-                PlayerJoinedEventArgs args = new PlayerJoinedEventArgs();
-                args.NetConnection = lp.IP;
-                args.PlayerName = lp.PlayerName;
-                args.PlayerFaction = (Faction)lp.Faction;
-                OnPlayerJoined(args);
+                request.AcceptIfKey(APPID);
+                Console.ForegroundColor = ConsoleColor.Green;
+                Console.WriteLine("CONNECTION ACCEPTED.");
+                Console.ForegroundColor = ConsoleColor.White;
+            }
+            else
+            {
+                request.Reject();
+                Console.ForegroundColor = ConsoleColor.Red;
+                Console.WriteLine("CONNECTION REJECTED.");
+                Console.ForegroundColor = ConsoleColor.White;
             }
         }
 
         /// <summary>
-        /// Handle Status updates initiated by Lidgren
+        /// Handle Network Errors
         /// </summary>
-        /// <param name="inc">Incoming Message</param>
-        private void HandleStatusChanged(NetIncomingMessage inc)
+        /// <param name="endPoint"></param>
+        /// <param name="socketError"></param>
+        private void OnNetworkErrorEvent(System.Net.IPEndPoint endPoint, System.Net.Sockets.SocketError socketError)
         {
-            NetConnectionStatus status = (NetConnectionStatus)inc.ReadByte();
-            switch (status)
+            throw new NotImplementedException();
+        }
+
+        private void OnNetworkReceiveEvent(NetPeer peer, NetPacketReader reader, DeliveryMethod deliveryMethod)
+        {
+            PacketTypes packetType = (PacketTypes)reader.GetByte();
+
+            switch (packetType)
             {
-                case NetConnectionStatus.Connected:
-                    //Send Map to new Player
-                    PlayerConnectedEventArgs args1 = new PlayerConnectedEventArgs();
-                    args1.NetConnection = inc.SenderConnection;
-                    OnPlayerConnected(args1);
+                case PacketTypes.LOGIN:
+                    HandlePlayerLogin(peer, reader);
                     break;
 
-                case NetConnectionStatus.Disconnected:
-                    //Remove Player from PM
-                    PlayerLeftEventArgs args2 = new PlayerLeftEventArgs();
-                    args2.NetConnection = inc.SenderConnection;
-                    OnPlayerLeft(args2);
-                    break;
-
-                case NetConnectionStatus.Disconnecting:
-                    //Remove Player from PM
-                    PlayerLeftEventArgs args3 = new PlayerLeftEventArgs();
-                    args3.NetConnection = inc.SenderConnection;
-                    OnPlayerLeft(args3);
+                default:
+                    Console.ForegroundColor = ConsoleColor.Red;
+                    Console.WriteLine("RECEIVED UNKNOWN PACKET.");
+                    Console.ForegroundColor = ConsoleColor.White;
                     break;
             }
-            Console.WriteLine("STATUS: " + status + ", FOR: " + inc.SenderConnection);
+            reader.Recycle();
+        }
+
+        private void OnPeerConnectedEvent(NetPeer peer)
+        {
+            Console.WriteLine("PLAYER CONNECTED: {0}", peer.EndPoint); // Show peer ip
+            //Send Map to new Player
+            PlayerConnectedEventArgs args1 = new PlayerConnectedEventArgs();
+            args1.NetPeer = peer;
+            OnPlayerConnected(args1);
+        }
+
+        private void OnPeerDisconnectedEvent(NetPeer peer, DisconnectInfo disconnectInfo)
+        {
+            Console.WriteLine("PLAYER {0} DISCONNECTED. INFO: {1}", peer.EndPoint.ToString(), disconnectInfo.Reason);
+            //Remove Player from PM
+            PlayerLeftEventArgs args2 = new PlayerLeftEventArgs();
+            args2.NetPeer = peer;
+            OnPlayerLeft(args2);
         }
 
         /// <summary>
@@ -210,9 +182,9 @@ namespace EmpireAttackServer.Networking
         /// </summary>
         /// <param name="netConnection">clientConnection</param>
         /// <param name="msg">Outgoing Message</param>
-        private void SendMessageToConnection(NetConnection netConnection, NetOutgoingMessage msg)
+        private void SendMessageToConnection(NetPeer netConnection, NetDataWriter msg)
         {
-            Server.SendMessage(msg, netConnection, NetDeliveryMethod.ReliableOrdered);
+            netConnection.Send(msg, DeliveryMethod.ReliableOrdered);
         }
 
         #endregion Private Methods
@@ -224,15 +196,6 @@ namespace EmpireAttackServer.Networking
         protected virtual void OnPlayerConnected(PlayerConnectedEventArgs e)
         {
             PlayerConnected?.Invoke(this, e);
-        }
-
-        /// <summary>
-        /// Delegate call
-        /// </summary>
-        /// <param name="e">PlayerJoined EventArgs</param>
-        protected virtual void OnPlayerJoined(PlayerJoinedEventArgs e)
-        {
-            PlayerJoined?.Invoke(this, e);
         }
 
         protected virtual void OnPlayerLeft(PlayerLeftEventArgs e)
@@ -247,8 +210,6 @@ namespace EmpireAttackServer.Networking
         #region Public Events
 
         public event EventHandler<PlayerConnectedEventArgs> PlayerConnected;
-
-        public event EventHandler<PlayerJoinedEventArgs> PlayerJoined;
 
         public event EventHandler<PlayerLeftEventArgs> PlayerLeft;
 
@@ -266,19 +227,7 @@ namespace EmpireAttackServer.Networking
     {
         #region Public Properties
 
-        public NetConnection NetConnection { get; set; }
-
-        #endregion Public Properties
-    }
-
-    /// <summary>
-    /// Event Arguments for joining Players
-    /// </summary>
-    public class PlayerJoinedEventArgs : EventArgs
-    {
-        #region Public Properties
-
-        public NetConnection NetConnection { get; set; }
+        public NetPeer NetPeer { get; set; }
         public Faction PlayerFaction { get; set; }
         public string PlayerName { get; set; }
 
@@ -292,7 +241,7 @@ namespace EmpireAttackServer.Networking
     {
         #region Public Properties
 
-        public NetConnection NetConnection { get; set; }
+        public NetPeer NetPeer { get; set; }
 
         #endregion Public Properties
     }
