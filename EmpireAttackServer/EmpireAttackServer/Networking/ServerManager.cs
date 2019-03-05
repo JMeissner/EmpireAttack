@@ -94,6 +94,11 @@ namespace EmpireAttackServer.Networking
 
         #region Private Methods
 
+        /// <summary>
+        /// Handles player logins and the according callbacks
+        /// </summary>
+        /// <param name="peer">connected peer</param>
+        /// <param name="reader">Netpacket without 1st byte</param>
         private void HandlePlayerLogin(NetPeer peer, NetPacketReader reader)
         {
             LoginPacket loginPacket = new LoginPacket(reader);
@@ -101,10 +106,12 @@ namespace EmpireAttackServer.Networking
             args1.NetPeer = peer;
             args1.PlayerFaction = (Faction)loginPacket.Faction;
             args1.PlayerName = loginPacket.PlayerName;
-            OnPlayerConnected(args1);
 
             //Console Output
             Console.WriteLine("Player {0} login successful. Faction: {1}", loginPacket.PlayerName, (Faction)loginPacket.Faction);
+
+            //Invoke Event
+            OnPlayerConnected(args1);
         }
 
         /// <summary>
@@ -137,9 +144,17 @@ namespace EmpireAttackServer.Networking
         /// <param name="socketError"></param>
         private void OnNetworkErrorEvent(System.Net.IPEndPoint endPoint, System.Net.Sockets.SocketError socketError)
         {
-            throw new NotImplementedException();
+            Console.ForegroundColor = ConsoleColor.Red;
+            Console.WriteLine("NETWORKERROR: {0}", socketError.GetTypeCode());
+            Console.ForegroundColor = ConsoleColor.White;
         }
 
+        /// <summary>
+        /// Called whenever a new non-library packet is received
+        /// </summary>
+        /// <param name="peer">connected peer</param>
+        /// <param name="reader">NetPacket</param>
+        /// <param name="deliveryMethod">Deliverymethod of the received packet</param>
         private void OnNetworkReceiveEvent(NetPeer peer, NetPacketReader reader, DeliveryMethod deliveryMethod)
         {
             PacketTypes packetType = (PacketTypes)reader.GetByte();
@@ -159,15 +174,20 @@ namespace EmpireAttackServer.Networking
             reader.Recycle();
         }
 
+        /// <summary>
+        /// Called when a client successfully connected to the server
+        /// </summary>
+        /// <param name="peer">connected peer</param>
         private void OnPeerConnectedEvent(NetPeer peer)
         {
-            Console.WriteLine("PLAYER CONNECTED: {0}", peer.EndPoint); // Show peer ip
-            //Send Map to new Player
-            PlayerConnectedEventArgs args1 = new PlayerConnectedEventArgs();
-            args1.NetPeer = peer;
-            OnPlayerConnected(args1);
+            Console.WriteLine("PLAYER CONNECTED: {0}", peer.EndPoint.ToString()); // Show peer ip
         }
 
+        /// <summary>
+        /// Called when a client disconnected from the server
+        /// </summary>
+        /// <param name="peer">disconnected peer</param>
+        /// <param name="disconnectInfo"></param>
         private void OnPeerDisconnectedEvent(NetPeer peer, DisconnectInfo disconnectInfo)
         {
             Console.WriteLine("PLAYER {0} DISCONNECTED. INFO: {1}", peer.EndPoint.ToString(), disconnectInfo.Reason);
