@@ -61,7 +61,7 @@ namespace EmpireAttackServer.TileMap
                 for (int y = 0; y < myBitMap.Height; y++)
                 {
                     // Get the color of a pixel within myBitmap.
-                    Color pixelColor = myBitMap.GetPixel(x, y);
+                    Color pixelColor = myBitMap.GetPixel(y, x);
                     string pixelColorStringValue =
                         pixelColor.R.ToString("D3") + " " +
                         pixelColor.G.ToString("D3") + " " +
