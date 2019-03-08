@@ -90,7 +90,7 @@ namespace EmpireAttackServer
         {
             Console.WriteLine("Sending map to player: {0}...", e.PlayerName);
 
-            Server.SendMapToPlayer(e.NetPeer, gameInstance.GetTiles());
+            Server.SendMapToPlayer(e.NetPeer, gameInstance.GetTileMap());
         }
 
         private static void OnPlayerLeft(Object sender, PlayerLeftEventArgs e)

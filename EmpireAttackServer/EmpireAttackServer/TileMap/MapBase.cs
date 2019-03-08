@@ -30,14 +30,19 @@ namespace EmpireAttackServer.TileMap
             throw new NotImplementedException();
         }
 
-        public bool CanOccupyTile(int x, int y)
+        public bool CanOccupyTile(Faction faction, int attackingForce, int x, int y)
         {
             throw new NotImplementedException();
         }
 
-        public void GetPopulation(string faction)
+        public void GetPopulation(Faction faction)
         {
             throw new NotImplementedException();
+        }
+
+        public TileType GetTileType(int x, int y)
+        {
+            return tileMap[x][y].Type;
         }
 
         public bool IsConnected(int x, int y)
@@ -50,30 +55,16 @@ namespace EmpireAttackServer.TileMap
             return isconnected;
         }
 
-        public bool OccupyTile(int x, int y)
+        public bool OccupyTile(Faction faction, int attackingForce, int x, int y)
         {
             throw new NotImplementedException();
         }
 
         public void UpdateMapPopulation()
         {
-            for (int i = 0; i < tileMap.Length; i++)
-            {
-                for (int j = 0; j < tileMap[0].Length; j++)
-                {
-                    if (!tileMap[i][j].Faction.Equals("None"))
-                    {
-                        if (IsConnected(i, j))
-                        {
-                            tileMap[i][j].Population += 1;
-                        }
-                        else
-                        {
-                            tileMap[i][j].Population -= 1;
-                        }
-                    }
-                }
-            }
+            //BFS
+            //Connected + 1
+            //Unconnected - 1
         }
 
         #endregion Public Methods

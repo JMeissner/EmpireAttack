@@ -2,7 +2,7 @@
 {
     public enum TileType
     {
-        Normal, Forest, Hills, Urban, Water
+        Normal, Forest, Hills, Urban, Water, Capital
     };
 
     public class Tile

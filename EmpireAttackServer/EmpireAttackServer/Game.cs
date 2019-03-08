@@ -32,7 +32,7 @@ namespace EmpireAttackServer
         /// Returns the tilemap for serverupdates etc
         /// </summary>
         /// <returns>tilemap (2d Array of Tiles)</returns>
-        public Tile[][] GetTiles()
+        public Tile[][] GetTileMap()
         {
             if (map != null)
             {
@@ -66,6 +66,30 @@ namespace EmpireAttackServer
         }
 
         #endregion Public Methods
+
+        #region Private Methods
+
+        private void SetCapitals(int numberOfFactions)
+        {
+            Random random = new Random();
+            //Select Column of x1 and x4
+            int x14col = random.Next(0, 6);
+            //Select Column of x2 and x3
+            int x23col = random.Next(map.tileMap[0].Length - 6, map.tileMap[0].Length);
+            //Select Column of x5 and x6
+            int x56col = random.Next((map.tileMap[0].Length / 2) - 3, (map.tileMap[0].Length / 2) + 3);
+            //Set Capitals regarding numberOfFactions
+            int tempX = 3;
+            while (map.GetTileType(tempX, x14col) != TileType.Normal)
+            {
+                tempX++;
+            }
+            map.tileMap[tempX][x14col].Type = TileType.Capital;
+            //Add capital to dictionary
+            //Capitals.Add(Faction.Baguette, new Point(tempX, x14col));
+        }
+
+        #endregion Private Methods
 
         #region Private Structs
 
