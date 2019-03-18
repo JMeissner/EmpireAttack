@@ -12,6 +12,7 @@ namespace EmpireAttackServer.Players
         #region Private Fields
 
         private List<Player> players;
+        private Dictionary<String, Faction> allPlayers;
 
         #endregion Private Fields
 
@@ -20,6 +21,7 @@ namespace EmpireAttackServer.Players
         public PlayerManager()
         {
             players = new List<Player>();
+            allPlayers = new Dictionary<string, Faction>();
         }
 
         #endregion Public Constructors
@@ -32,6 +34,10 @@ namespace EmpireAttackServer.Players
             if (!PlayerExists(IP))
             {
                 players.Add(newp);
+                if(!allPlayers.ContainsKey(name))
+                {
+                    allPlayers.Add(newp.name, newp.faction);
+                }
             }
             return false;
         }
@@ -73,6 +79,17 @@ namespace EmpireAttackServer.Players
             return false;
         }
 
+        public Faction GetFactionFromName(String name)
+        {
+            if (allPlayers.ContainsKey(name))
+            {
+                return allPlayers[name];
+            }
+            return Faction.NONE;
+        }
+
         #endregion Public Methods
+
+
     }
 }

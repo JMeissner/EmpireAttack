@@ -8,6 +8,7 @@ using EmpireAttackServer.TileMap;
 using EmpireAttackServer.Networking;
 using EmpireAttackServer.Shared;
 using Lidgren.Network;
+using EmpireAttackServer.Players;
 
 namespace EmpireAttackServer
 {
@@ -16,6 +17,7 @@ namespace EmpireAttackServer
         #region Private Fields
 
         private static Game gameInstance;
+        private static PlayerManager playerManager;
         private static Timer gameTimer;
 
         // Server object
@@ -28,6 +30,8 @@ namespace EmpireAttackServer
         #region Public Fields
 
         public static int GameTicks;
+        public static int NumberOfFactions = 2;
+        public static List<Faction> AvailableFactions;
 
         #endregion Public Fields
 
@@ -36,8 +40,12 @@ namespace EmpireAttackServer
         private static void Initialize()
         {
             //TODO: Map initialization
+            AvailableFactions = new List<Faction>();
+            AvailableFactions.Add(Faction.Eagles);
+            AvailableFactions.Add(Faction.Baguette);
+
             //TODO: Server startup sequence
-            Server = new ServerManager("EA2", 14242, 100);
+            Server = new ServerManager("EA2", 14242, 10);
             Server.PlayerConnected += OnPlayerConnected;
             Server.PlayerLeft += OnPlayerLeft;
             Server.Initialize();
@@ -45,6 +53,9 @@ namespace EmpireAttackServer
             //Initialize GameInstance
             GameTicks = 0;
             gameInstance.Initialize(1);
+
+            //Initialize PlayerManager
+            playerManager = new PlayerManager();
 
             //Setup Game Update Routine timer to update every 500ms
             gameTimer = new System.Timers.Timer(500);
@@ -88,13 +99,33 @@ namespace EmpireAttackServer
 
         private static void OnPlayerConnected(Object sender, PlayerConnectedEventArgs e)
         {
-            Console.WriteLine("Sending map to player: {0}...", e.PlayerName);
+            //INIT Phase
+            if(!e.hasSelected)
+            {
+                Faction playerFaction = playerManager.GetFactionFromName(e.PlayerName);
+                if (playerFaction == Faction.NONE)
+                {
+                    //Send Selection
+                    Server.SendLogInInfoToPlayer(e.NetPeer, e.PlayerName, AvailableFactions.ToArray());
+                } else
+                {
+                    //Send Previous Faction
+                    Server.SendLogInInfoToPlayer(e.NetPeer, e.PlayerName, new Faction[1] { playerFaction });
+                }
+            }
+            //FACTIONSELECT Phase
+            else
+            {
+                playerManager.AddPlayer(e.PlayerName, e.PlayerFaction, e.NetPeer);
+                Console.WriteLine("Sending map to player: {0}...", e.PlayerName);
 
-            Server.SendMapToPlayer(e.NetPeer, gameInstance.GetTileMap());
+                Server.SendMapToPlayer(e.NetPeer, gameInstance.GetTileMap());
+            }
         }
 
         private static void OnPlayerLeft(Object sender, PlayerLeftEventArgs e)
         {
+            playerManager.RemovePlayer(e.NetPeer);
         }
 
         private static void OnProcessExit(object sender, EventArgs e)

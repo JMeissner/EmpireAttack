@@ -6,6 +6,7 @@ using LiteNetLib;
 using EmpireAttackServer.Players;
 using EmpireAttackServer.Shared;
 using LiteNetLib.Utils;
+using static EmpireAttackServer.Shared.LoginPacket;
 
 namespace EmpireAttackServer.Networking
 {
@@ -90,6 +91,14 @@ namespace EmpireAttackServer.Networking
             SendMessageToConnection(netConnection, msg);
         }
 
+        public void SendLogInInfoToPlayer(NetPeer netConnection, string playerName, Faction[] factions)
+        {
+            LoginPacket packet = new LoginPacket(playerName, factions);
+            NetDataWriter msg = new NetDataWriter();
+            packet.Encode(msg);
+            SendMessageToConnection(netConnection, msg);
+        }
+
         #endregion Public Methods
 
         #region Private Methods
@@ -103,10 +112,22 @@ namespace EmpireAttackServer.Networking
         {
             LoginPacket loginPacket = new LoginPacket(reader);
             PlayerConnectedEventArgs args1 = new PlayerConnectedEventArgs();
-            args1.NetPeer = peer;
-            args1.PlayerFaction = (Faction)loginPacket.Faction;
-            args1.PlayerName = loginPacket.PlayerName;
-
+            switch ((LoginMsg)loginPacket.LoginMsgType)
+            {
+                case LoginMsg.INIT:
+                    args1.NetPeer = peer;
+                    args1.hasSelected = false;
+                    args1.PlayerFaction = (Faction)loginPacket.Faction;
+                    args1.PlayerName = loginPacket.PlayerName;
+                    break;
+                case LoginMsg.FACTIONSELECT:
+                    args1.NetPeer = peer;
+                    args1.hasSelected = true;
+                    args1.PlayerFaction = (Faction)loginPacket.Faction;
+                    args1.PlayerName = loginPacket.PlayerName;
+                    break;
+            }
+            //TODO: Change Debug
             //Console Output
             Console.WriteLine("Player {0} login successful. Faction: {1}", loginPacket.PlayerName, (Faction)loginPacket.Faction);
 
@@ -248,6 +269,7 @@ namespace EmpireAttackServer.Networking
         #region Public Properties
 
         public NetPeer NetPeer { get; set; }
+        public bool hasSelected { get; set; }
         public Faction PlayerFaction { get; set; }
         public string PlayerName { get; set; }
 
