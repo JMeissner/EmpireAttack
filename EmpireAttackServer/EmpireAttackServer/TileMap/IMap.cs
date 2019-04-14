@@ -12,8 +12,6 @@ namespace EmpireAttackServer.TileMap
 
         void GetPopulation(Faction faction);
 
-        bool IsConnected(int x, int y);
-
         bool OccupyTile(Faction faction, int attackingForce, int x, int y);
 
         void UpdateMapPopulation();

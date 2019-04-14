@@ -50,6 +50,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Game.cs" />
+    <Compile Include="Shared\NetworkMessages\DeltaUpdatePacket.cs" />
     <Compile Include="Shared\NetworkMessages\LoginPacket.cs" />
     <Compile Include="Shared\NetworkMessages\PacketTypes.cs" />
     <Compile Include="Shared\NetworkMessages\IPacket.cs" />

@@ -15,6 +15,7 @@ namespace EmpireAttackServer
 
         public MapBase map;
         private Dictionary<Faction, Point> Capitals;
+        private Dictionary<Faction, int> Population;
 
         #endregion Public Fields
 
@@ -22,6 +23,8 @@ namespace EmpireAttackServer
 
         public Game()
         {
+            Capitals = new Dictionary<Faction, Point>();
+            Population = new Dictionary<Faction, int>();
         }
 
         #endregion Public Constructors
@@ -63,6 +66,16 @@ namespace EmpireAttackServer
             //Update Map population
             map.UpdateMapPopulation();
             //TODO: Send update information
+        }
+
+        public bool ProcessDelta(Faction faction, int X, int Y)
+        {
+            if(map.CanOccupyTile(faction, Population[faction], X, Y))
+            {
+                map.OccupyTile(faction, Population[faction], X, Y);
+                return true;
+            }
+            return false;
         }
 
         #endregion Public Methods

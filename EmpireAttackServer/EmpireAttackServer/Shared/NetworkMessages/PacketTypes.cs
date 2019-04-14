@@ -9,6 +9,8 @@
 
         WORLDUPDATE,
 
+        DELTAUPDATE,
+
         TEST
     }
 }
