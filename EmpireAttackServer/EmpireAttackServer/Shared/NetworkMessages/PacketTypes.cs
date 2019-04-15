@@ -11,6 +11,8 @@
 
         DELTAUPDATE,
 
+        POPULATIONUPDATE,
+
         TEST
     }
 }

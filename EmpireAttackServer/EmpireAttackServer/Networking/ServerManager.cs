@@ -7,6 +7,7 @@ using EmpireAttackServer.Players;
 using EmpireAttackServer.Shared;
 using LiteNetLib.Utils;
 using static EmpireAttackServer.Shared.LoginPacket;
+using EmpireAttackServer.Shared.NetworkMessages;
 
 namespace EmpireAttackServer.Networking
 {
@@ -99,6 +100,23 @@ namespace EmpireAttackServer.Networking
             SendMessageToConnection(netConnection, msg);
         }
 
+        public void SendPopulationUpdateToAll(Faction faction, int amount)
+        {
+            byte bFaction = (byte)faction;
+            PopulationUpdatePacket packet = new PopulationUpdatePacket(bFaction, amount);
+            NetDataWriter msg = new NetDataWriter();
+            packet.Encode(msg);
+            server.SendToAll(msg, DeliveryMethod.ReliableOrdered);
+        }
+
+        public void SendDeltaUpdateToAll(Faction faction, int FieldX, int FieldY)
+        {
+            DeltaUpdatePacket packet = new DeltaUpdatePacket(faction, FieldX, FieldY);
+            NetDataWriter msg = new NetDataWriter();
+            packet.Encode(msg);
+            server.SendToAll(msg, DeliveryMethod.ReliableOrdered);
+        }
+
         #endregion Public Methods
 
         #region Private Methods
@@ -129,10 +147,25 @@ namespace EmpireAttackServer.Networking
             }
             //TODO: Change Debug
             //Console Output
-            Console.WriteLine("Player {0} login successful. Faction: {1}", loginPacket.PlayerName, (Faction)loginPacket.Faction);
+            //Console.WriteLine("Player {0} login successful. Faction: {1}", loginPacket.PlayerName, (Faction)loginPacket.Faction);
 
             //Invoke Event
             OnPlayerConnected(args1);
+        }
+
+        /// <summary>
+        /// Handles deltaupdates send to the server
+        /// </summary>
+        /// <param name="peer">connected peer</param>
+        /// <param name="reader">netpacket without the 1st byte</param>
+        private void HandleDeltaUpdate(NetPeer peer, NetPacketReader reader)
+        {
+            DeltaUpdatePacket packet = new DeltaUpdatePacket(reader);
+            DeltaUpdateReceivedArgs args = new DeltaUpdateReceivedArgs();
+            args.PlayerFaction = packet.faction;
+            args.FieldX = packet.FieldX;
+            args.FieldY = packet.FieldY;
+            OnDeltaUpdateReceived(args);
         }
 
         /// <summary>
@@ -184,6 +217,9 @@ namespace EmpireAttackServer.Networking
             {
                 case PacketTypes.LOGIN:
                     HandlePlayerLogin(peer, reader);
+                    break;
+                case PacketTypes.DELTAUPDATE:
+
                     break;
 
                 default:
@@ -239,6 +275,11 @@ namespace EmpireAttackServer.Networking
             PlayerConnected?.Invoke(this, e);
         }
 
+        protected virtual void OnDeltaUpdateReceived(DeltaUpdateReceivedArgs e)
+        {
+            DeltaUpdateReceived?.Invoke(this, e);
+        }
+
         protected virtual void OnPlayerLeft(PlayerLeftEventArgs e)
         {
             PlayerLeft?.Invoke(this, e);
@@ -251,6 +292,8 @@ namespace EmpireAttackServer.Networking
         #region Public Events
 
         public event EventHandler<PlayerConnectedEventArgs> PlayerConnected;
+
+        public event EventHandler<DeltaUpdateReceivedArgs> DeltaUpdateReceived;
 
         public event EventHandler<PlayerLeftEventArgs> PlayerLeft;
 
@@ -272,6 +315,17 @@ namespace EmpireAttackServer.Networking
         public bool hasSelected { get; set; }
         public Faction PlayerFaction { get; set; }
         public string PlayerName { get; set; }
+
+        #endregion Public Properties
+    }
+
+    public class DeltaUpdateReceivedArgs : EventArgs
+    {
+        #region Public Properties
+
+        public Faction PlayerFaction { get; set; }
+        public int FieldX { get; set; }
+        public int FieldY { get; set; }
 
         #endregion Public Properties
     }

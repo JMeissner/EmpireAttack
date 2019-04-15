@@ -14,6 +14,7 @@ namespace EmpireAttackServer
         #region Public Fields
 
         public MapBase map;
+        private List<Faction> factions;
         private Dictionary<Faction, Point> Capitals;
         private Dictionary<Faction, int> Population;
 
@@ -48,20 +49,37 @@ namespace EmpireAttackServer
         /// Initializes the game with a specified way to load or generate the map
         /// </summary>
         /// <param name="mapLoadType">1=PNGImport, 2=... </param>
-        public void Initialize(int mapLoadType)
+        public void Initialize(int mapLoadType, List<Faction> factions)
         {
+            //Save copy of available factions
+            this.factions = factions;
+
+            foreach(Faction f in factions)
+            {
+                Population.Add(f, 1);
+            }
             //Load Map
             if (mapLoadType == 1)
             {
                 map = new MapPNGImport(AppDomain.CurrentDomain.BaseDirectory + @"/Map.png");
             }
             //Set Capitals
+            SetCapitals(factions.Count);
         }
 
         /// <summary>
         /// Called every Gameupdate
         /// </summary>
         public void Update()
+        {
+            foreach(Faction f in factions)
+            {
+                AddFactionPopulation(f, 1);
+            }
+            //TODO: Send update information
+        }
+
+        public void LateUpdate()
         {
             //Update Map population
             map.UpdateMapPopulation();
@@ -70,9 +88,11 @@ namespace EmpireAttackServer
 
         public bool ProcessDelta(Faction faction, int X, int Y)
         {
+            int prevPopulation = map.tileMap[X][Y].Population;
             if(map.CanOccupyTile(faction, Population[faction], X, Y))
             {
                 map.OccupyTile(faction, Population[faction], X, Y);
+                SubstractPopulation(faction, (Population[faction] - prevPopulation));
                 return true;
             }
             return false;
@@ -84,22 +104,40 @@ namespace EmpireAttackServer
 
         private void SetCapitals(int numberOfFactions)
         {
+            int[] capitalCoords = map.GetCapitals();
+            map.RemoveCapitals();
             Random random = new Random();
-            //Select Column of x1 and x4
-            int x14col = random.Next(0, 6);
-            //Select Column of x2 and x3
-            int x23col = random.Next(map.tileMap[0].Length - 6, map.tileMap[0].Length);
-            //Select Column of x5 and x6
-            int x56col = random.Next((map.tileMap[0].Length / 2) - 3, (map.tileMap[0].Length / 2) + 3);
-            //Set Capitals regarding numberOfFactions
-            int tempX = 3;
-            while (map.GetTileType(tempX, x14col) != TileType.Normal)
+            List<int> usedIndex = new List<int>();
+            for(int i = 0; i < numberOfFactions; i++)
             {
-                tempX++;
+                int index;
+                do
+                {
+                    index = random.Next(0, (capitalCoords.Length / 2));
+                    index = index * 2;
+                } while (usedIndex.Contains(index));
+                
+                Capitals.Add(factions[i], new Point(capitalCoords[index], capitalCoords[index + 1]));
+                map.SetCapitalAtPosition(capitalCoords[index], capitalCoords[index + 1], factions[i]);
             }
-            map.tileMap[tempX][x14col].Type = TileType.Capital;
-            //Add capital to dictionary
-            //Capitals.Add(Faction.Baguette, new Point(tempX, x14col));
+        }
+
+        private void AddFactionPopulation(Faction faction, int amount)
+        {
+            Population[faction] += amount;
+            UpdatePopulationEventArgs args = new UpdatePopulationEventArgs();
+            args.faction = faction;
+            args.amount = Population[faction];
+            OnUpdatePopulation(args);
+        }
+
+        private void SubstractPopulation(Faction faction, int amount)
+        {
+            Population[faction] -= amount;
+            UpdatePopulationEventArgs args = new UpdatePopulationEventArgs();
+            args.faction = faction;
+            args.amount = Population[faction];
+            OnUpdatePopulation(args);
         }
 
         #endregion Private Methods
@@ -127,5 +165,22 @@ namespace EmpireAttackServer
         }
 
         #endregion Private Structs
+
+        public event EventHandler<UpdatePopulationEventArgs> UpdatePopulation;
+
+        public class UpdatePopulationEventArgs : EventArgs
+        {
+            #region Public Properties
+
+            public Faction faction;
+            public int amount;
+
+            #endregion Public Properties
+        }
+
+        protected virtual void OnUpdatePopulation(UpdatePopulationEventArgs e)
+        {
+            UpdatePopulation?.Invoke(this, e);
+        }
     }
 }

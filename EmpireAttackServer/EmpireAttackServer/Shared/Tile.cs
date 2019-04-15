@@ -47,6 +47,7 @@
                 case TileType.Forest: stype = "F"; break;
                 case TileType.Hills: stype = "H"; break;
                 case TileType.Urban: stype = "U"; break;
+                case TileType.Capital: stype = "C"; break;
                 default: stype = "E"; break;
             }
             return stype;

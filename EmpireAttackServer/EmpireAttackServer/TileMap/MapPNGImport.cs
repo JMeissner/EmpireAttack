@@ -15,7 +15,7 @@ namespace EmpireAttackServer.TileMap
         public MapPNGImport(string path)
         {
             PNGToTileMap(path);
-            DebugMap();
+            //DebugMap();
         }
 
         #endregion Public Constructors
@@ -101,6 +101,7 @@ namespace EmpireAttackServer.TileMap
                         case "000 000 000":
                             {
                                 // black pixel
+                                tileMap[x][y] = new Tile(TileType.Capital);
                                 break;
                             }
                     }

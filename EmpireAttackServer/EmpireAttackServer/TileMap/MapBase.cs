@@ -87,6 +87,43 @@ namespace EmpireAttackServer.TileMap
             //Unconnected - 1
         }
 
+        public int[] GetCapitals()
+        {
+            List<int> rList = new List<int>();
+            for(int i = 0; i < tileMap.Length; i++)
+            {
+                for(int j = 0; j < tileMap[0].Length; j++)
+                {
+                    if(tileMap[i][j].Type.Equals(TileType.Capital))
+                    {
+                        rList.Add(i);
+                        rList.Add(j);
+                    }
+                }
+            }
+            return rList.ToArray();
+        }
+
+        public void RemoveCapitals()
+        {
+            for (int i = 0; i < tileMap.Length; i++)
+            {
+                for (int j = 0; j < tileMap[0].Length; j++)
+                {
+                    if (tileMap[i][j].Type.Equals(TileType.Capital))
+                    {
+                        tileMap[i][j].Type = TileType.Normal;
+                    }
+                }
+            }
+        }
+
+        public void SetCapitalAtPosition(int i, int j, Faction faction)
+        {
+            tileMap[i][j].Type = TileType.Capital;
+            tileMap[i][j].Faction = faction;
+        }
+
         #endregion Public Methods
     }
 }

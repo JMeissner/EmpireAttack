@@ -9,6 +9,7 @@ using EmpireAttackServer.Networking;
 using EmpireAttackServer.Shared;
 using Lidgren.Network;
 using EmpireAttackServer.Players;
+using static EmpireAttackServer.Game;
 
 namespace EmpireAttackServer
 {
@@ -41,24 +42,34 @@ namespace EmpireAttackServer
         {
             //TODO: Map initialization
             AvailableFactions = new List<Faction>();
-            AvailableFactions.Add(Faction.Eagles);
-            AvailableFactions.Add(Faction.Baguette);
+            for(int i = 0; i < NumberOfFactions; i++)
+            {
+                int f = 0;
+                do
+                {
+                    Random r = new Random();
+                    f = r.Next(1, Enum.GetNames(typeof(Faction)).Length);
+                } while (AvailableFactions.Contains((Faction)f));
+                AvailableFactions.Add((Faction)f);
+            }
 
             //TODO: Server startup sequence
             Server = new ServerManager("EA2", 14242, 10);
             Server.PlayerConnected += OnPlayerConnected;
             Server.PlayerLeft += OnPlayerLeft;
+            Server.DeltaUpdateReceived += OnDeltaUpdateReceived;
             Server.Initialize();
 
             //Initialize GameInstance
             GameTicks = 0;
-            gameInstance.Initialize(1);
+            gameInstance.Initialize(1, AvailableFactions);
+            gameInstance.UpdatePopulation += OnUpdatePopulation;
 
             //Initialize PlayerManager
             playerManager = new PlayerManager();
 
-            //Setup Game Update Routine timer to update every 500ms
-            gameTimer = new System.Timers.Timer(500);
+            //Setup Game Update Routine timer to update every 1000ms
+            gameTimer = new System.Timers.Timer(1000);
             gameTimer.Elapsed += OnGameUpdate;
             gameTimer.AutoReset = true;
             gameTimer.Enabled = true;
@@ -138,6 +149,21 @@ namespace EmpireAttackServer
             //Fast running Loop
             //Fetches Messages to the server and processes them
             Server.OnUpdate();
+        }
+
+        private static void OnUpdatePopulation(Object sender, UpdatePopulationEventArgs e)
+        {
+            //Population update triggered by the game
+            Server.SendPopulationUpdateToAll(e.faction, e.amount);
+        }
+
+        private static void OnDeltaUpdateReceived(Object sender, DeltaUpdateReceivedArgs e)
+        {
+            //Send deltaupdate to all connected clients, if the move was legal
+            if(gameInstance.ProcessDelta(e.PlayerFaction, e.FieldX, e.FieldY))
+            {
+                Server.SendDeltaUpdateToAll(e.PlayerFaction, e.FieldX, e.FieldY);
+            }
         }
 
         #endregion Private Methods
