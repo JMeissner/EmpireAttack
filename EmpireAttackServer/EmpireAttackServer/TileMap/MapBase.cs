@@ -122,6 +122,7 @@ namespace EmpireAttackServer.TileMap
         {
             tileMap[i][j].Type = TileType.Capital;
             tileMap[i][j].Faction = faction;
+            tileMap[i][j].Population = 1;
         }
 
         #endregion Public Methods
