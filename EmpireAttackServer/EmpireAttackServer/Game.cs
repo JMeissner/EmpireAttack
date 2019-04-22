@@ -76,7 +76,6 @@ namespace EmpireAttackServer
             {
                 AddFactionPopulation(f, 1);
             }
-            //TODO: Send update information
         }
 
         public void LateUpdate()
@@ -86,16 +85,52 @@ namespace EmpireAttackServer
             //TODO: Send update information
         }
 
-        public bool ProcessDelta(Faction faction, int X, int Y)
+        public bool OccupyFromDelta(Faction faction, int X, int Y, int pop)
         {
-            int prevPopulation = map.tileMap[X][Y].Population;
-            if(map.CanOccupyTile(faction, Population[faction], X, Y))
+            if(pop > Population[faction])
             {
-                map.OccupyTile(faction, Population[faction], X, Y);
-                SubstractPopulation(faction, (Population[faction] - prevPopulation));
+                return false;
+            }
+            int prevPopulation = map.tileMap[X][Y].Population;
+            if(map.CanOccupyTile(faction, pop, X, Y))
+            {
+                map.OccupyTile(faction, pop, X, Y);
+                SubstractPopulation(faction, pop);
                 return true;
             }
             return false;
+        }
+
+        public bool PopulationFromDelta(Faction faction, int X, int Y, int pop)
+        {
+            if (pop > Population[faction])
+            {
+                return false;
+            }
+            int prevPopulation = map.tileMap[X][Y].Population;
+            if (map.tileMap[X][Y].Faction.Equals(faction))
+            {
+                map.AddPopulation(X, Y, pop);
+                SubstractPopulation(faction, pop);
+                return true;
+            }
+            else if(map.IsNeighbor(faction, X, Y))
+            {
+                map.AddPopulation(X, Y, -pop);
+                SubstractPopulation(faction, pop);
+                return true;
+            }
+            return false;
+        }
+
+        public int GetPopulationOnTile(int x, int y)
+        {
+            return map.tileMap[x][y].Population;
+        }
+
+        public Faction GetFactionOnTile(int x, int y)
+        {
+            return map.tileMap[x][y].Faction;
         }
 
         #endregion Public Methods
@@ -134,6 +169,15 @@ namespace EmpireAttackServer
         private void SubstractPopulation(Faction faction, int amount)
         {
             Population[faction] -= amount;
+            UpdatePopulationEventArgs args = new UpdatePopulationEventArgs();
+            args.faction = faction;
+            args.amount = Population[faction];
+            OnUpdatePopulation(args);
+        }
+
+        private void ZeroPopulation(Faction faction)
+        {
+            Population[faction] = 0;
             UpdatePopulationEventArgs args = new UpdatePopulationEventArgs();
             args.faction = faction;
             args.amount = Population[faction];

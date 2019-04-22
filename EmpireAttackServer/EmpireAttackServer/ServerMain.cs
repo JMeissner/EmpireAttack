@@ -20,11 +20,13 @@ namespace EmpireAttackServer
         private static Game gameInstance;
         private static PlayerManager playerManager;
         private static Timer gameTimer;
+        private static Timer lateGameTimer;
 
         // Server object
         private static ServerManager Server;
 
         private static Timer serverTimer;
+        private static Timer syncTimer;
 
         #endregion Private Fields
 
@@ -68,8 +70,8 @@ namespace EmpireAttackServer
             //Initialize PlayerManager
             playerManager = new PlayerManager();
 
-            //Setup Game Update Routine timer to update every 1000ms
-            gameTimer = new System.Timers.Timer(1000);
+            //Setup Game Update Routine timer to update every 500ms
+            gameTimer = new System.Timers.Timer(500);
             gameTimer.Elapsed += OnGameUpdate;
             gameTimer.AutoReset = true;
             gameTimer.Enabled = true;
@@ -104,7 +106,7 @@ namespace EmpireAttackServer
         {
             GameTicks += 1;
             //Console.WriteLine("Update at {0:HH:mm:ss.fff}", e.SignalTime);
-            //gameInstance.Update();
+            gameInstance.Update();
             //Console.WriteLine("Update took {0} ms", (DateTime.Now - e.SignalTime));
         }
 
@@ -160,9 +162,16 @@ namespace EmpireAttackServer
         private static void OnDeltaUpdateReceived(Object sender, DeltaUpdateReceivedArgs e)
         {
             //Send deltaupdate to all connected clients, if the move was legal
-            if(gameInstance.ProcessDelta(e.PlayerFaction, e.FieldX, e.FieldY))
+            if(gameInstance.OccupyFromDelta(e.PlayerFaction, e.FieldX, e.FieldY, e.Population))
             {
-                Server.SendDeltaUpdateToAll(e.PlayerFaction, e.FieldX, e.FieldY);
+                //Tile is now occupied by attacking force
+                Server.SendDeltaUpdateToAll(e.PlayerFaction, e.FieldX, e.FieldY, gameInstance.GetPopulationOnTile(e.FieldX, e.FieldY));
+                return;
+            }
+            if(gameInstance.PopulationFromDelta(e.PlayerFaction, e.FieldX, e.FieldY, e.Population))
+            {
+                //Tile is not occupied by attacking force => update population on tile
+                Server.SendDeltaUpdateToAll(gameInstance.GetFactionOnTile(e.FieldX, e.FieldY), e.FieldX, e.FieldY, gameInstance.GetPopulationOnTile(e.FieldX, e.FieldY));
             }
         }
 

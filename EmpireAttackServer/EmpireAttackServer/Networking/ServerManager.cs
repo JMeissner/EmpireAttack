@@ -109,9 +109,9 @@ namespace EmpireAttackServer.Networking
             server.SendToAll(msg, DeliveryMethod.ReliableOrdered);
         }
 
-        public void SendDeltaUpdateToAll(Faction faction, int FieldX, int FieldY)
+        public void SendDeltaUpdateToAll(Faction faction, int FieldX, int FieldY, int Population)
         {
-            DeltaUpdatePacket packet = new DeltaUpdatePacket(faction, FieldX, FieldY);
+            DeltaUpdatePacket packet = new DeltaUpdatePacket(faction, FieldX, FieldY, Population);
             NetDataWriter msg = new NetDataWriter();
             packet.Encode(msg);
             server.SendToAll(msg, DeliveryMethod.ReliableOrdered);
@@ -165,6 +165,7 @@ namespace EmpireAttackServer.Networking
             args.PlayerFaction = packet.faction;
             args.FieldX = packet.FieldX;
             args.FieldY = packet.FieldY;
+            args.Population = packet.Population;
             OnDeltaUpdateReceived(args);
         }
 
@@ -219,7 +220,7 @@ namespace EmpireAttackServer.Networking
                     HandlePlayerLogin(peer, reader);
                     break;
                 case PacketTypes.DELTAUPDATE:
-
+                    HandleDeltaUpdate(peer, reader);
                     break;
 
                 default:
@@ -326,6 +327,7 @@ namespace EmpireAttackServer.Networking
         public Faction PlayerFaction { get; set; }
         public int FieldX { get; set; }
         public int FieldY { get; set; }
+        public int Population { get; set; }
 
         #endregion Public Properties
     }

@@ -27,27 +27,31 @@ namespace EmpireAttackServer.TileMap
 
         public void AddPopulation(int x, int y, int amount)
         {
-            throw new NotImplementedException();
+            tileMap[x][y].Population += amount;
         }
 
         public bool CanOccupyTile(Faction faction, int attackingForce, int x, int y)
         {
+            if(tileMap[x][y].Faction.Equals(faction))
+            {
+                return false;
+            }
             bool canOccupy = false;
             if(x+1 < tileMap.Length)
             {
-                if (tileMap[x + 1][y].Faction.Equals(faction) && tileMap[x + 1][y].Population < attackingForce) { canOccupy = true; }
+                if (tileMap[x + 1][y].Faction.Equals(faction) && tileMap[x][y].Population < attackingForce) { canOccupy = true; }
             }
             if(x-1 >= 0)
             {
-                if (tileMap[x - 1][y].Faction.Equals(faction) && tileMap[x - 1][y].Population < attackingForce) { canOccupy = true; }
+                if (tileMap[x - 1][y].Faction.Equals(faction) && tileMap[x][y].Population < attackingForce) { canOccupy = true; }
             }
             if(y+1 < tileMap[0].Length)
             {
-                if (tileMap[x][y + 1].Faction.Equals(faction) && tileMap[x][y + 1].Population < attackingForce) { canOccupy = true; }
+                if (tileMap[x][y + 1].Faction.Equals(faction) && tileMap[x][y].Population < attackingForce) { canOccupy = true; }
             }
             if(y-1 >= 0)
             {
-                if (tileMap[x][y - 1].Faction.Equals(faction) && tileMap[x][y - 1].Population < attackingForce) { canOccupy = true; }
+                if (tileMap[x][y - 1].Faction.Equals(faction) && tileMap[x][y].Population < attackingForce) { canOccupy = true; }
             }
             return canOccupy;
         }
@@ -69,6 +73,16 @@ namespace EmpireAttackServer.TileMap
             if (tileMap[x - 1][y].Faction.Equals(tileMap[x][y].Faction)) { isconnected = true; }
             if (tileMap[x][y + 1].Faction.Equals(tileMap[x][y].Faction)) { isconnected = true; }
             if (tileMap[x][y - 1].Faction.Equals(tileMap[x][y].Faction)) { isconnected = true; }
+            return isconnected;
+        }
+
+        public bool IsNeighbor(Faction faction, int x, int y)
+        {
+            bool isconnected = false;
+            if (tileMap[x + 1][y].Faction.Equals(faction)) { isconnected = true; }
+            if (tileMap[x - 1][y].Faction.Equals(faction)) { isconnected = true; }
+            if (tileMap[x][y + 1].Faction.Equals(faction)) { isconnected = true; }
+            if (tileMap[x][y - 1].Faction.Equals(faction)) { isconnected = true; }
             return isconnected;
         }
 
