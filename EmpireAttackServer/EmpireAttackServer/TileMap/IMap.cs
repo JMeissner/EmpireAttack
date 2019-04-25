@@ -14,7 +14,7 @@ namespace EmpireAttackServer.TileMap
 
         bool OccupyTile(Faction faction, int attackingForce, int x, int y);
 
-        void UpdateMapPopulation();
+        int UpdateMapPopulation(int x, int y);
 
         #endregion Public Methods
     }

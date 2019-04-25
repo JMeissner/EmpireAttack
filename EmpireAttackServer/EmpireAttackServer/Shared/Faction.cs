@@ -7,16 +7,16 @@
     {
         NONE,
 
-        Eagles,
+        USA,
 
         Itallica,
 
-        Baguette,
+        France,
 
         Germania,
 
-        ChingChong,
+        China,
 
-        UDRRS
+        UDSSR
     }
 }

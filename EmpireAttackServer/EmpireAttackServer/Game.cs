@@ -80,9 +80,16 @@ namespace EmpireAttackServer
 
         public void LateUpdate()
         {
+            Console.ForegroundColor = ConsoleColor.DarkMagenta;
+            Console.WriteLine("GAME>>UPDATING MAP...");
+            Console.ForegroundColor = ConsoleColor.White;
             //Update Map population
-            map.UpdateMapPopulation();
-            //TODO: Send update information
+            foreach (Faction f in Capitals.Keys)
+            {
+                int updatedTiles = map.UpdateMapPopulation(Capitals[f].x, Capitals[f].y);
+                Console.WriteLine("GAME>>UPDATED {0} TILES FROM: {1}.", updatedTiles, f.ToString());
+            }
+            OnReSync(new EventArgs());
         }
 
         public bool OccupyFromDelta(Faction faction, int X, int Y, int pop)
@@ -225,6 +232,13 @@ namespace EmpireAttackServer
         protected virtual void OnUpdatePopulation(UpdatePopulationEventArgs e)
         {
             UpdatePopulation?.Invoke(this, e);
+        }
+
+        public event EventHandler<EventArgs> ReSync;
+
+        protected virtual void OnReSync(EventArgs e)
+        {
+            ReSync?.Invoke(this, e);
         }
     }
 }

@@ -92,6 +92,18 @@ namespace EmpireAttackServer.Networking
             SendMessageToConnection(netConnection, msg);
         }
 
+        /// <summary>
+        /// Syncs all players after LateUpdate
+        /// </summary>
+        /// <param name="tiles">map to sync</param>
+        public void SyncAllPlayers(Tile[][] tiles)
+        {
+            WorldUpdatePacket packet = new WorldUpdatePacket(tiles);
+            NetDataWriter msg = new NetDataWriter();
+            packet.Encode(msg);
+            server.SendToAll(msg, DeliveryMethod.ReliableOrdered);
+        }
+
         public void SendLogInInfoToPlayer(NetPeer netConnection, string playerName, Faction[] factions)
         {
             LoginPacket packet = new LoginPacket(playerName, factions);

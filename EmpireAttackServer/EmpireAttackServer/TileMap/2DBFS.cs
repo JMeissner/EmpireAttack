@@ -54,15 +54,17 @@ namespace EmpireAttackServer.TileMap
             queue = new Queue<Point>();
             map[x][y].IsConnected = true;
             map[x][y].IsVisited = true;
-            GetNeighbors(x, y);
+            GetNeighbors(x, y, map);
             int counter = 0;
             //BFS Loop
-            while (queue.Any() && counter < limit)
+            //No Counter due to large map sizes
+            while (queue.Any() /*&& counter < limit*/)
             {
                 Point p = queue.Dequeue();
                 map[p.x][p.y].IsConnected = true;
                 map[p.x][p.y].IsVisited = true;
-                GetNeighbors(p.x, p.y);
+                workingCopyMap = map;
+                GetNeighbors(p.x, p.y, map);
                 counter++;
             }
             //CleanUp
@@ -77,20 +79,20 @@ namespace EmpireAttackServer.TileMap
 
         #region Private Methods
 
-        private void GetNeighbors(int x, int y)
+        private void GetNeighbors(int x, int y, Tile[][] map)
         {
             //Up
             if (x + 1 < maxX)
             {
-                if (workingCopyMap[x + 1][y].Faction.Equals(workingFaction))
+                if (map[x + 1][y].Faction.Equals(workingFaction) && !map[x + 1][y].IsVisited && !queue.Contains(new Point(x + 1, y)))
                 {
                     queue.Enqueue(new Point(x + 1, y));
                 }
             }
             //Down
-            if (x - 1 > 0)
+            if (x - 1 >= 0)
             {
-                if (workingCopyMap[x - 1][y].Faction.Equals(workingFaction))
+                if (map[x - 1][y].Faction.Equals(workingFaction) && !map[x - 1][y].IsVisited && !queue.Contains(new Point(x - 1, y)))
                 {
                     queue.Enqueue(new Point(x - 1, y));
                 }
@@ -98,15 +100,15 @@ namespace EmpireAttackServer.TileMap
             //Right
             if (y + 1 < maxY)
             {
-                if (workingCopyMap[x][y + 1].Faction.Equals(workingFaction))
+                if (map[x][y + 1].Faction.Equals(workingFaction) && !map[x][y + 1].IsVisited && !queue.Contains(new Point(x, y + 1)))
                 {
                     queue.Enqueue(new Point(x, y + 1));
                 }
             }
             //Left
-            if (y - 1 < 0)
+            if (y - 1 >= 0)
             {
-                if (workingCopyMap[x][y - 1].Faction.Equals(workingFaction))
+                if (map[x][y - 1].Faction.Equals(workingFaction) && !map[x][y - 1].IsVisited && !queue.Contains(new Point(x, y - 1)))
                 {
                     queue.Enqueue(new Point(x, y - 1));
                 }
