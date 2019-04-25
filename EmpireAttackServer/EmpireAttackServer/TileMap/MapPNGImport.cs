@@ -4,15 +4,40 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Drawing;
+using EmpireAttackServer.Shared;
 
 namespace EmpireAttackServer.TileMap
 {
     public class MapPNGImport : MapBase
     {
+        #region Public Constructors
+
         public MapPNGImport(string path)
         {
             PNGToTileMap(path);
-            DebugMap();
+            //DebugMap();
+        }
+
+        #endregion Public Constructors
+
+        #region Private Methods
+
+        private void DebugMap()
+        {
+            if (tileMap == null)
+            {
+                Console.WriteLine("Error: tileMap is null");
+                return;
+            }
+            for (int i = 0; i < tileMap.Length; i++)
+            {
+                string print = "";
+                for (int j = 0; j < tileMap[0].Length; j++)
+                {
+                    print += " " + tileMap[i][j].GetShortType();
+                }
+                Console.WriteLine(print);
+            }
         }
 
         private void PNGToTileMap(string path)
@@ -21,12 +46,13 @@ namespace EmpireAttackServer.TileMap
             try
             {
                 myBitMap = new Bitmap(path);
-            }catch(ArgumentException e)
+            }
+            catch (ArgumentException e)
             {
                 Console.WriteLine("Loading Map from PNG failed. Please specify a correct path");
             }
 
-            if(myBitMap == null) { Console.WriteLine("Loading Map from PNG failed. Please specify a correct path"); return; }
+            if (myBitMap == null) { Console.WriteLine("Loading Map from PNG failed. Please specify a correct path"); return; }
 
             tileMap = new Tile[myBitMap.Width][];
             for (int x = 0; x < myBitMap.Width; x++)
@@ -35,7 +61,7 @@ namespace EmpireAttackServer.TileMap
                 for (int y = 0; y < myBitMap.Height; y++)
                 {
                     // Get the color of a pixel within myBitmap.
-                    Color pixelColor = myBitMap.GetPixel(x, y);
+                    Color pixelColor = myBitMap.GetPixel(y, x);
                     string pixelColorStringValue =
                         pixelColor.R.ToString("D3") + " " +
                         pixelColor.G.ToString("D3") + " " +
@@ -75,30 +101,14 @@ namespace EmpireAttackServer.TileMap
                         case "000 000 000":
                             {
                                 // black pixel
+                                tileMap[x][y] = new Tile(TileType.Capital);
                                 break;
                             }
                     }
                 }
             }
-
         }
 
-        private void DebugMap()
-        {
-            if(tileMap == null)
-            {
-                Console.WriteLine("Error: tileMap is null");
-                return;
-            }
-            for (int i = 0; i < tileMap.Length; i++)
-            {
-                string print = "";
-                for(int j = 0; j < tileMap[0].Length; j++)
-                {
-                    print += " " + tileMap[i][j].GetShortType();
-                }
-                Console.WriteLine(print);
-            }
-        }
+        #endregion Private Methods
     }
 }

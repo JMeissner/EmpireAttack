@@ -1,20 +1,16 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Lidgren.Network;
+﻿using LiteNetLib;
+using LiteNetLib.Utils;
 
-namespace EmpireAttackServer.Networking.NetworkMessages
+namespace EmpireAttackServer.Shared
 {
-    public interface IGameMessage
+    public interface IPacket
     {
         #region Public Properties
 
         /// <summary>
         /// Gets MessageType.
         /// </summary>
-        GameMessageTypes MessageType { get; }
+        PacketTypes MessageType { get; }
 
         #endregion Public Properties
 
@@ -26,7 +22,7 @@ namespace EmpireAttackServer.Networking.NetworkMessages
         /// <param name="im">
         /// The im.
         /// </param>
-        void Decode(NetIncomingMessage im);
+        void Decode(NetPacketReader im);
 
         /// <summary>
         /// The encode.
@@ -34,7 +30,7 @@ namespace EmpireAttackServer.Networking.NetworkMessages
         /// <param name="om">
         /// The om.
         /// </param>
-        void Encode(NetOutgoingMessage om);
+        void Encode(NetDataWriter om);
 
         #endregion Public Methods
     }

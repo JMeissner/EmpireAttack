@@ -1,23 +1,21 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using EmpireAttackServer.Shared;
 
 namespace EmpireAttackServer.TileMap
 {
     public interface IMap
     {
-        bool OccupyTile(int x, int y);
-
-        void GetPopulation(string faction);
-
-        bool CanOccupyTile(int x, int y);
-
-        bool IsConnected(int x, int y);
+        #region Public Methods
 
         void AddPopulation(int x, int y, int amount);
 
-        void UpdateMapPopulation();
+        bool CanOccupyTile(Faction faction, int attackingForce, int x, int y);
+
+        void GetPopulation(Faction faction);
+
+        bool OccupyTile(Faction faction, int attackingForce, int x, int y);
+
+        int UpdateMapPopulation(int x, int y);
+
+        #endregion Public Methods
     }
 }

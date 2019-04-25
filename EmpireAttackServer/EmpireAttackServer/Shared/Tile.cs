@@ -1,21 +1,17 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace EmpireAttackServer
+﻿namespace EmpireAttackServer.Shared
 {
     public enum TileType
     {
-        Normal, Forest, Hills, Urban, Water
+        Normal, Forest, Hills, Urban, Water, Capital
     };
 
     public class Tile
     {
         #region Public Properties
 
-        public string Faction { get; set; }
+        public Faction Faction { get; set; }
+        public bool IsConnected { get; set; }
+        public bool IsVisited { get; set; }
         public int Population { get; set; }
         public TileType Type { get; set; }
 
@@ -25,8 +21,15 @@ namespace EmpireAttackServer
 
         public Tile(TileType type)
         {
-            this.Faction = "None";
+            this.Faction = Faction.NONE;
             this.Population = 0;
+            this.Type = type;
+        }
+
+        public Tile(Faction faction, int population, TileType type)
+        {
+            this.Faction = faction;
+            this.Population = population;
             this.Type = type;
         }
 
@@ -44,6 +47,7 @@ namespace EmpireAttackServer
                 case TileType.Forest: stype = "F"; break;
                 case TileType.Hills: stype = "H"; break;
                 case TileType.Urban: stype = "U"; break;
+                case TileType.Capital: stype = "C"; break;
                 default: stype = "E"; break;
             }
             return stype;
