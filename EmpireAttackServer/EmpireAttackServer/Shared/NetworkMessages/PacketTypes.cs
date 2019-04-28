@@ -13,6 +13,8 @@
 
         POPULATIONUPDATE,
 
+        GAMEENDED,
+
         TEST
     }
 }

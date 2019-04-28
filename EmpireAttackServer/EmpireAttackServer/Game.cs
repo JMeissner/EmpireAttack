@@ -14,8 +14,9 @@ namespace EmpireAttackServer
         #region Public Fields
 
         public MapBase map;
-        private List<Faction> factions;
         private Dictionary<Faction, Point> Capitals;
+        private List<Faction> eliminatedFactions;
+        private List<Faction> factions;
         private Dictionary<Faction, int> Population;
 
         #endregion Public Fields
@@ -26,11 +27,22 @@ namespace EmpireAttackServer
         {
             Capitals = new Dictionary<Faction, Point>();
             Population = new Dictionary<Faction, int>();
+            eliminatedFactions = new List<Faction>();
         }
 
         #endregion Public Constructors
 
         #region Public Methods
+
+        public Faction GetFactionOnTile(int x, int y)
+        {
+            return map.tileMap[x][y].Faction;
+        }
+
+        public int GetPopulationOnTile(int x, int y)
+        {
+            return map.tileMap[x][y].Population;
+        }
 
         /// <summary>
         /// Returns the tilemap for serverupdates etc
@@ -54,7 +66,7 @@ namespace EmpireAttackServer
             //Save copy of available factions
             this.factions = factions;
 
-            foreach(Faction f in factions)
+            foreach (Faction f in factions)
             {
                 Population.Add(f, 1);
             }
@@ -68,16 +80,8 @@ namespace EmpireAttackServer
         }
 
         /// <summary>
-        /// Called every Gameupdate
+        /// Updates the map and stacks population on connected tiles
         /// </summary>
-        public void Update()
-        {
-            foreach(Faction f in factions)
-            {
-                AddFactionPopulation(f, 1);
-            }
-        }
-
         public void LateUpdate()
         {
             Console.ForegroundColor = ConsoleColor.DarkMagenta;
@@ -92,14 +96,22 @@ namespace EmpireAttackServer
             OnReSync(new EventArgs());
         }
 
+        /// <summary>
+        /// Try to occupy a field with a given population
+        /// </summary>
+        /// <param name="faction">attacking faction</param>
+        /// <param name="X">Tilemap X</param>
+        /// <param name="Y">Tilemap Y</param>
+        /// <param name="pop">Attacking population</param>
+        /// <returns>true if successful, false otherwise</returns>
         public bool OccupyFromDelta(Faction faction, int X, int Y, int pop)
         {
-            if(pop > Population[faction])
+            if (pop > Population[faction])
             {
                 return false;
             }
             int prevPopulation = map.tileMap[X][Y].Population;
-            if(map.CanOccupyTile(faction, pop, X, Y))
+            if (map.CanOccupyTile(faction, pop, X, Y))
             {
                 map.OccupyTile(faction, pop, X, Y);
                 SubstractPopulation(faction, pop);
@@ -121,7 +133,7 @@ namespace EmpireAttackServer
                 SubstractPopulation(faction, pop);
                 return true;
             }
-            else if(map.IsNeighbor(faction, X, Y))
+            else if (map.IsNeighbor(faction, X, Y))
             {
                 map.AddPopulation(X, Y, -pop);
                 SubstractPopulation(faction, pop);
@@ -130,39 +142,20 @@ namespace EmpireAttackServer
             return false;
         }
 
-        public int GetPopulationOnTile(int x, int y)
+        /// <summary>
+        /// Called every Gameupdate
+        /// </summary>
+        public void Update()
         {
-            return map.tileMap[x][y].Population;
-        }
-
-        public Faction GetFactionOnTile(int x, int y)
-        {
-            return map.tileMap[x][y].Faction;
+            foreach (Faction f in factions)
+            {
+                AddFactionPopulation(f, 1);
+            }
         }
 
         #endregion Public Methods
 
         #region Private Methods
-
-        private void SetCapitals(int numberOfFactions)
-        {
-            int[] capitalCoords = map.GetCapitals();
-            map.RemoveCapitals();
-            Random random = new Random();
-            List<int> usedIndex = new List<int>();
-            for(int i = 0; i < numberOfFactions; i++)
-            {
-                int index;
-                do
-                {
-                    index = random.Next(0, (capitalCoords.Length / 2));
-                    index = index * 2;
-                } while (usedIndex.Contains(index));
-                
-                Capitals.Add(factions[i], new Point(capitalCoords[index], capitalCoords[index + 1]));
-                map.SetCapitalAtPosition(capitalCoords[index], capitalCoords[index + 1], factions[i]);
-            }
-        }
 
         private void AddFactionPopulation(Faction faction, int amount)
         {
@@ -171,6 +164,26 @@ namespace EmpireAttackServer
             args.faction = faction;
             args.amount = Population[faction];
             OnUpdatePopulation(args);
+        }
+
+        private void SetCapitals(int numberOfFactions)
+        {
+            int[] capitalCoords = map.GetCapitals();
+            map.RemoveCapitals();
+            Random random = new Random();
+            List<int> usedIndex = new List<int>();
+            for (int i = 0; i < numberOfFactions; i++)
+            {
+                int index;
+                do
+                {
+                    index = random.Next(0, (capitalCoords.Length / 2));
+                    index = (index * 2) % capitalCoords.Length;
+                } while (usedIndex.Contains(index));
+
+                Capitals.Add(factions[i], new Point(capitalCoords[index], capitalCoords[index + 1]));
+                map.SetCapitalAtPosition(capitalCoords[index], capitalCoords[index + 1], factions[i]);
+            }
         }
 
         private void SubstractPopulation(Faction faction, int amount)
@@ -192,6 +205,14 @@ namespace EmpireAttackServer
         }
 
         #endregion Private Methods
+
+        private void OvertakeEnemyCapital(Faction attacker, Faction defender)
+        {
+            eliminatedFactions.Add(defender);
+            //TODO: Callback to ServerMain
+            //TODO: Map -> Overtake Tiles
+            //TODO: Sync
+        }
 
         #region Private Structs
 
@@ -217,16 +238,19 @@ namespace EmpireAttackServer
 
         #endregion Private Structs
 
+        #region Public Events
+
+        public event EventHandler<EventArgs> ReSync;
+
         public event EventHandler<UpdatePopulationEventArgs> UpdatePopulation;
 
-        public class UpdatePopulationEventArgs : EventArgs
+        #endregion Public Events
+
+        #region Protected Methods
+
+        protected virtual void OnReSync(EventArgs e)
         {
-            #region Public Properties
-
-            public Faction faction;
-            public int amount;
-
-            #endregion Public Properties
+            ReSync?.Invoke(this, e);
         }
 
         protected virtual void OnUpdatePopulation(UpdatePopulationEventArgs e)
@@ -234,11 +258,20 @@ namespace EmpireAttackServer
             UpdatePopulation?.Invoke(this, e);
         }
 
-        public event EventHandler<EventArgs> ReSync;
+        #endregion Protected Methods
 
-        protected virtual void OnReSync(EventArgs e)
+        #region Public Classes
+
+        public class UpdatePopulationEventArgs : EventArgs
         {
-            ReSync?.Invoke(this, e);
+            #region Public Properties
+
+            public int amount;
+            public Faction faction;
+
+            #endregion Public Properties
         }
+
+        #endregion Public Classes
     }
 }

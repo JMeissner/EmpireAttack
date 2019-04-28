@@ -18,27 +18,30 @@ namespace EmpireAttackServer
         #region Private Fields
 
         private static Game gameInstance;
-        private static PlayerManager playerManager;
         private static Timer gameTimer;
         private static Timer lateGameTimer;
+        private static Timer matchTimer;
+        private static PlayerManager playerManager;
 
         // Server object
         private static ServerManager Server;
 
         private static Timer serverTimer;
         private static Timer syncTimer;
-        private static Timer matchTimer;
 
         #endregion Private Fields
 
         #region Public Fields
 
+        public static List<Faction> AvailableFactions;
+
+        public static int GameTickRate = 500;
+
         //STATIC GAME PARAMETERS
         public static int GameTicks;
-        public static int NumberOfFactions = 2;
-        public static List<Faction> AvailableFactions;
+
         public static int GameTime = 900;
-        public static int GameTickRate = 500;
+        public static int NumberOfFactions = 2;
         public static int ServerTickRate = 50;
         public static int SyncRate = 600000;
 
@@ -48,9 +51,9 @@ namespace EmpireAttackServer
 
         private static void Initialize()
         {
-            //TODO: Map initialization
+            //Faction Initialization
             AvailableFactions = new List<Faction>();
-            for(int i = 0; i < NumberOfFactions; i++)
+            for (int i = 0; i < NumberOfFactions; i++)
             {
                 int f = 0;
                 do
@@ -61,7 +64,7 @@ namespace EmpireAttackServer
                 AvailableFactions.Add((Faction)f);
             }
 
-            //TODO: Server startup sequence
+            //Server startup sequence
             Server = new ServerManager("EA2", 14242, 10);
             Server.PlayerConnected += OnPlayerConnected;
             Server.PlayerLeft += OnPlayerLeft;
@@ -126,6 +129,22 @@ namespace EmpireAttackServer
             Console.ReadLine();
         }
 
+        private static void OnDeltaUpdateReceived(Object sender, DeltaUpdateReceivedArgs e)
+        {
+            //Send deltaupdate to all connected clients, if the move was legal
+            if (gameInstance.OccupyFromDelta(e.PlayerFaction, e.FieldX, e.FieldY, e.Population))
+            {
+                //Tile is now occupied by attacking force
+                Server.SendDeltaUpdateToAll(e.PlayerFaction, e.FieldX, e.FieldY, gameInstance.GetPopulationOnTile(e.FieldX, e.FieldY));
+                return;
+            }
+            if (gameInstance.PopulationFromDelta(e.PlayerFaction, e.FieldX, e.FieldY, e.Population))
+            {
+                //Tile is not occupied by attacking force => update population on tile
+                Server.SendDeltaUpdateToAll(gameInstance.GetFactionOnTile(e.FieldX, e.FieldY), e.FieldX, e.FieldY, gameInstance.GetPopulationOnTile(e.FieldX, e.FieldY));
+            }
+        }
+
         private static void OnGameUpdate(Object sender, ElapsedEventArgs e)
         {
             GameTicks += 1;
@@ -139,37 +158,27 @@ namespace EmpireAttackServer
             gameInstance.LateUpdate();
         }
 
-        private static void OnReSync(Object sender, EventArgs e)
-        {
-            //Sync map to all players after LateUpdate. Might want to use DELTA instead on large/sparse maps
-            Console.ForegroundColor = ConsoleColor.Yellow;
-            Console.WriteLine("RESYNC PLAYERS...");
-            Console.ForegroundColor = ConsoleColor.White;
-            Server.SyncAllPlayers(gameInstance.GetTileMap());
-        }
-
-        private static void OnSync(Object sender, ElapsedEventArgs e)
-        {
-            //Not in use right now. Use ReSync instead
-        }
-
         private static void OnMatchEnd(Object sender, ElapsedEventArgs e)
         {
+        }
 
+        private static void OnMatchEnd()
+        {
         }
 
         private static void OnPlayerConnected(Object sender, PlayerConnectedEventArgs e)
         {
             //TODO: rework Login Behavior
             //INIT Phase
-            if(!e.hasSelected)
+            if (!e.hasSelected)
             {
                 Faction playerFaction = playerManager.GetFactionFromName(e.PlayerName);
                 if (playerFaction == Faction.NONE)
                 {
                     //Send Selection
                     Server.SendLogInInfoToPlayer(e.NetPeer, e.PlayerName, AvailableFactions.ToArray());
-                } else
+                }
+                else
                 {
                     //Send Previous Faction
                     Server.SendLogInInfoToPlayer(e.NetPeer, e.PlayerName, new Faction[1] { playerFaction });
@@ -195,6 +204,15 @@ namespace EmpireAttackServer
             Console.WriteLine("Shutting down Server...");
         }
 
+        private static void OnReSync(Object sender, EventArgs e)
+        {
+            //Sync map to all players after LateUpdate. Might want to use DELTA instead on large/sparse maps
+            Console.ForegroundColor = ConsoleColor.Yellow;
+            Console.WriteLine("RESYNC PLAYERS...");
+            Console.ForegroundColor = ConsoleColor.White;
+            Server.SyncAllPlayers(gameInstance.GetTileMap());
+        }
+
         private static void OnServerUpdate(Object sender, ElapsedEventArgs e)
         {
             //Fast running Loop
@@ -202,26 +220,15 @@ namespace EmpireAttackServer
             Server.OnUpdate();
         }
 
+        private static void OnSync(Object sender, ElapsedEventArgs e)
+        {
+            //Not in use right now. Use ReSync instead
+        }
+
         private static void OnUpdatePopulation(Object sender, UpdatePopulationEventArgs e)
         {
             //Population update triggered by the game
             Server.SendPopulationUpdateToAll(e.faction, e.amount);
-        }
-
-        private static void OnDeltaUpdateReceived(Object sender, DeltaUpdateReceivedArgs e)
-        {
-            //Send deltaupdate to all connected clients, if the move was legal
-            if(gameInstance.OccupyFromDelta(e.PlayerFaction, e.FieldX, e.FieldY, e.Population))
-            {
-                //Tile is now occupied by attacking force
-                Server.SendDeltaUpdateToAll(e.PlayerFaction, e.FieldX, e.FieldY, gameInstance.GetPopulationOnTile(e.FieldX, e.FieldY));
-                return;
-            }
-            if(gameInstance.PopulationFromDelta(e.PlayerFaction, e.FieldX, e.FieldY, e.Population))
-            {
-                //Tile is not occupied by attacking force => update population on tile
-                Server.SendDeltaUpdateToAll(gameInstance.GetFactionOnTile(e.FieldX, e.FieldY), e.FieldX, e.FieldY, gameInstance.GetPopulationOnTile(e.FieldX, e.FieldY));
-            }
         }
 
         #endregion Private Methods

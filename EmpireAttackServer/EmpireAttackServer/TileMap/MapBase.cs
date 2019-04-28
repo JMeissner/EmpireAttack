@@ -32,28 +32,45 @@ namespace EmpireAttackServer.TileMap
 
         public bool CanOccupyTile(Faction faction, int attackingForce, int x, int y)
         {
-            if(tileMap[x][y].Faction.Equals(faction))
+            if (tileMap[x][y].Faction.Equals(faction))
             {
                 return false;
             }
             bool canOccupy = false;
-            if(x+1 < tileMap.Length)
+            if (x + 1 < tileMap.Length)
             {
                 if (tileMap[x + 1][y].Faction.Equals(faction) && tileMap[x][y].Population < attackingForce) { canOccupy = true; }
             }
-            if(x-1 >= 0)
+            if (x - 1 >= 0)
             {
                 if (tileMap[x - 1][y].Faction.Equals(faction) && tileMap[x][y].Population < attackingForce) { canOccupy = true; }
             }
-            if(y+1 < tileMap[0].Length)
+            if (y + 1 < tileMap[0].Length)
             {
                 if (tileMap[x][y + 1].Faction.Equals(faction) && tileMap[x][y].Population < attackingForce) { canOccupy = true; }
             }
-            if(y-1 >= 0)
+            if (y - 1 >= 0)
             {
                 if (tileMap[x][y - 1].Faction.Equals(faction) && tileMap[x][y].Population < attackingForce) { canOccupy = true; }
             }
             return canOccupy;
+        }
+
+        public int[] GetCapitals()
+        {
+            List<int> rList = new List<int>();
+            for (int i = 0; i < tileMap.Length; i++)
+            {
+                for (int j = 0; j < tileMap[0].Length; j++)
+                {
+                    if (tileMap[i][j].Type.Equals(TileType.Capital))
+                    {
+                        rList.Add(i);
+                        rList.Add(j);
+                    }
+                }
+            }
+            return rList.ToArray();
         }
 
         public void GetPopulation(Faction faction)
@@ -94,6 +111,41 @@ namespace EmpireAttackServer.TileMap
             return true;
         }
 
+        public void OvertakeEnemyTiles(Faction newf, Faction previous)
+        {
+            for (int i = 0; i < tileMap.Length; i++)
+            {
+                for (int j = 0; j < tileMap[0].Length; j++)
+                {
+                    if (tileMap[i][j].Faction.Equals(previous))
+                    {
+                        tileMap[i][j].Faction = newf;
+                    }
+                }
+            }
+        }
+
+        public void RemoveCapitals()
+        {
+            for (int i = 0; i < tileMap.Length; i++)
+            {
+                for (int j = 0; j < tileMap[0].Length; j++)
+                {
+                    if (tileMap[i][j].Type.Equals(TileType.Capital))
+                    {
+                        tileMap[i][j].Type = TileType.Normal;
+                    }
+                }
+            }
+        }
+
+        public void SetCapitalAtPosition(int i, int j, Faction faction)
+        {
+            tileMap[i][j].Type = TileType.Capital;
+            tileMap[i][j].Faction = faction;
+            tileMap[i][j].Population = 1;
+        }
+
         public int UpdateMapPopulation(int x, int y)
         {
             //BFS
@@ -118,7 +170,7 @@ namespace EmpireAttackServer.TileMap
                         else
                         {
                             tileMap[i][j].Population--;
-                            if(tileMap[i][j].Population <= 0)
+                            if (tileMap[i][j].Population <= 0)
                             {
                                 //TODO: Update Lost tiles
                                 tileMap[i][j].Faction = Faction.NONE;
@@ -128,44 +180,6 @@ namespace EmpireAttackServer.TileMap
                 }
             }
             return updatedTiles;
-        }
-
-        public int[] GetCapitals()
-        {
-            List<int> rList = new List<int>();
-            for(int i = 0; i < tileMap.Length; i++)
-            {
-                for(int j = 0; j < tileMap[0].Length; j++)
-                {
-                    if(tileMap[i][j].Type.Equals(TileType.Capital))
-                    {
-                        rList.Add(i);
-                        rList.Add(j);
-                    }
-                }
-            }
-            return rList.ToArray();
-        }
-
-        public void RemoveCapitals()
-        {
-            for (int i = 0; i < tileMap.Length; i++)
-            {
-                for (int j = 0; j < tileMap[0].Length; j++)
-                {
-                    if (tileMap[i][j].Type.Equals(TileType.Capital))
-                    {
-                        tileMap[i][j].Type = TileType.Normal;
-                    }
-                }
-            }
-        }
-
-        public void SetCapitalAtPosition(int i, int j, Faction faction)
-        {
-            tileMap[i][j].Type = TileType.Capital;
-            tileMap[i][j].Faction = faction;
-            tileMap[i][j].Population = 1;
         }
 
         #endregion Public Methods
