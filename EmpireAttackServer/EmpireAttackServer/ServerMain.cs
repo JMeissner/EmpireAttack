@@ -7,9 +7,9 @@ using System.Timers;
 using EmpireAttackServer.TileMap;
 using EmpireAttackServer.Networking;
 using EmpireAttackServer.Shared;
-using Lidgren.Network;
 using EmpireAttackServer.Players;
 using static EmpireAttackServer.Game;
+using System.Threading;
 
 namespace EmpireAttackServer
 {
@@ -18,16 +18,16 @@ namespace EmpireAttackServer
         #region Private Fields
 
         private static Game gameInstance;
-        private static Timer gameTimer;
-        private static Timer lateGameTimer;
-        private static Timer matchTimer;
+        private static System.Timers.Timer gameTimer;
+        private static System.Timers.Timer lateGameTimer;
+        private static System.Timers.Timer matchTimer;
         private static PlayerManager playerManager;
 
         // Server object
         private static ServerManager Server;
 
-        private static Timer serverTimer;
-        private static Timer syncTimer;
+        private static System.Timers.Timer serverTimer;
+        private static System.Timers.Timer syncTimer;
 
         #endregion Private Fields
 
@@ -47,7 +47,6 @@ namespace EmpireAttackServer
 
         #endregion Public Fields
 
-        #region Private Methods
 
         private static void Initialize()
         {
@@ -126,10 +125,28 @@ namespace EmpireAttackServer
             //TODO: Specify args for startup -> Import Config
             Initialize();
 
-            Console.ReadLine();
+            //Input Loop
+            while (true)
+            {
+                string value = "";
+                var thread = new Thread(
+                    () =>
+                    {
+                        value = Console.ReadLine(); // Publish the return value
+                    });
+                thread.Start();
+                thread.Join();
+
+                //Handle Input
+                if (value != "" && value != null)
+                {
+                    string[] splitCommand = value.Split(' ');
+                    Console.WriteLine("Command: " + splitCommand[0]);
+                }
+            }
         }
 
-        private static void OnDeltaUpdateReceived(Object sender, DeltaUpdateReceivedArgs e)
+        public static void OnDeltaUpdateReceived(Object sender, DeltaUpdateReceivedArgs e)
         {
             //Send deltaupdate to all connected clients, if the move was legal
             if (gameInstance.OccupyFromDelta(e.PlayerFaction, e.FieldX, e.FieldY, e.Population))
@@ -162,11 +179,11 @@ namespace EmpireAttackServer
         {
         }
 
-        private static void OnMatchEnd()
+        public static void OnMatchEnd()
         {
         }
 
-        private static void OnPlayerConnected(Object sender, PlayerConnectedEventArgs e)
+        public static void OnPlayerConnected(Object sender, PlayerConnectedEventArgs e)
         {
             //TODO: rework Login Behavior
             //INIT Phase
@@ -194,17 +211,17 @@ namespace EmpireAttackServer
             }
         }
 
-        private static void OnPlayerLeft(Object sender, PlayerLeftEventArgs e)
+        public static void OnPlayerLeft(Object sender, PlayerLeftEventArgs e)
         {
             playerManager.RemovePlayer(e.NetPeer);
         }
 
-        private static void OnProcessExit(object sender, EventArgs e)
+        public static void OnProcessExit(object sender, EventArgs e)
         {
             Console.WriteLine("Shutting down Server...");
         }
 
-        private static void OnReSync(Object sender, EventArgs e)
+        public static void OnReSync(Object sender, EventArgs e)
         {
             //Sync map to all players after LateUpdate. Might want to use DELTA instead on large/sparse maps
             Console.ForegroundColor = ConsoleColor.Yellow;
@@ -225,12 +242,11 @@ namespace EmpireAttackServer
             //Not in use right now. Use ReSync instead
         }
 
-        private static void OnUpdatePopulation(Object sender, UpdatePopulationEventArgs e)
+        public static void OnUpdatePopulation(Object sender, UpdatePopulationEventArgs e)
         {
             //Population update triggered by the game
             Server.SendPopulationUpdateToAll(e.faction, e.amount);
         }
-
-        #endregion Private Methods
+        
     }
 }
