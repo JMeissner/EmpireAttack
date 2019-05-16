@@ -57,6 +57,7 @@
     <Compile Include="Shared\NetworkMessages\PacketTypes.cs" />
     <Compile Include="Shared\NetworkMessages\IPacket.cs" />
     <Compile Include="Shared\NetworkMessages\PopulationUpdatePacket.cs" />
+    <Compile Include="Shared\NetworkMessages\StatusPacket.cs" />
     <Compile Include="Shared\NetworkMessages\WorldUpdatePacket.cs" />
     <Compile Include="Networking\ServerManager.cs" />
     <Compile Include="Shared\Faction.cs" />

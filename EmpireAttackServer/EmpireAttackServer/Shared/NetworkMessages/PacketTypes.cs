@@ -15,6 +15,8 @@
 
         GAMEENDED,
 
+        STATUS,
+
         TEST
     }
 }
