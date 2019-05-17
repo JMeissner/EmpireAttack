@@ -33,8 +33,6 @@ namespace EmpireAttackServer
 
         #region Public Fields
 
-        public static List<Faction> AvailableFactions;
-
         public static int GameTickRate = 500;
 
         //STATIC GAME PARAMETERS
@@ -50,30 +48,17 @@ namespace EmpireAttackServer
 
         private static void Initialize()
         {
-            //Faction Initialization
-            AvailableFactions = new List<Faction>();
-            for (int i = 0; i < NumberOfFactions; i++)
-            {
-                int f = 0;
-                do
-                {
-                    Random r = new Random();
-                    f = r.Next(1, Enum.GetNames(typeof(Faction)).Length);
-                } while (AvailableFactions.Contains((Faction)f));
-                AvailableFactions.Add((Faction)f);
-            }
 
             //Server startup sequence
-            Server = new ServerManager("EA2", 14242, 10);
             Server.PlayerConnected += OnPlayerConnected;
             Server.PlayerLeft += OnPlayerLeft;
             Server.DeltaUpdateReceived += OnDeltaUpdateReceived;
             Server.Initialize();
 
             //Initialize GameInstance
-            gameInstance = new Game();
+            //gameInstance = new Game();
             GameTicks = 0;
-            gameInstance.Initialize(1, AvailableFactions);
+            gameInstance.Initialize(1, NumberOfFactions);
             gameInstance.UpdatePopulation += OnUpdatePopulation;
             gameInstance.ReSync += OnReSync;
 
@@ -122,8 +107,9 @@ namespace EmpireAttackServer
             //Add Handler for application exit etc to free bound ressources
             AppDomain.CurrentDomain.ProcessExit += new EventHandler(OnProcessExit);
 
+            Root root = new Root();
             //TODO: Specify args for startup -> Import Config
-            Initialize();
+            //Initialize();
 
             //Input Loop
             while (true)
@@ -164,8 +150,6 @@ namespace EmpireAttackServer
 
         private static void OnGameUpdate(Object sender, ElapsedEventArgs e)
         {
-            GameTicks += 1;
-            //Console.WriteLine("Update at {0:HH:mm:ss.fff}", e.SignalTime);
             gameInstance.Update();
             //Console.WriteLine("Update took {0} ms", (DateTime.Now - e.SignalTime));
         }
@@ -193,7 +177,7 @@ namespace EmpireAttackServer
                 if (playerFaction == Faction.NONE)
                 {
                     //Send Selection
-                    Server.SendLogInInfoToPlayer(e.NetPeer, e.PlayerName, AvailableFactions.ToArray());
+                    //Server.SendLogInInfoToPlayer(e.NetPeer, e.PlayerName, AvailableFactions.ToArray());
                 }
                 else
                 {

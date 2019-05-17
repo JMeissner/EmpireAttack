@@ -29,12 +29,15 @@ namespace EmpireAttackServer.Networking
 
         private NetManager server;
 
+        private Root root;
+
         #endregion Private Fields
 
         #region Public Constructors
 
-        public ServerManager(string APPID, int PORT, int MAXPLAYERS)
+        public ServerManager(Root root, string APPID, int PORT, int MAXPLAYERS)
         {
+            this.root = root;
             ServerManager.APPID = APPID;
             ServerManager.PORT = PORT;
             ServerManager.MAXPLAYERS = MAXPLAYERS;

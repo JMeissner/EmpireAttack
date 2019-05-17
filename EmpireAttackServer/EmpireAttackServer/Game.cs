@@ -14,6 +14,7 @@ namespace EmpireAttackServer
         #region Public Fields
 
         public MapBase map;
+        private Root root;
         private Dictionary<Faction, Point> Capitals;
         private List<Faction> eliminatedFactions;
         private List<Faction> factions;
@@ -23,8 +24,9 @@ namespace EmpireAttackServer
 
         #region Public Constructors
 
-        public Game()
+        public Game(Root root)
         {
+            this.root = root;
             Capitals = new Dictionary<Faction, Point>();
             Population = new Dictionary<Faction, int>();
             eliminatedFactions = new List<Faction>();
@@ -61,10 +63,20 @@ namespace EmpireAttackServer
         /// Initializes the game with a specified way to load or generate the map
         /// </summary>
         /// <param name="mapLoadType">1=PNGImport, 2=... </param>
-        public void Initialize(int mapLoadType, List<Faction> factions)
+        public void Initialize(int mapLoadType, int NumberOfFactions)
         {
-            //Save copy of available factions
-            this.factions = factions;
+            //Faction Initialization
+            factions = new List<Faction>();
+            for (int i = 0; i < NumberOfFactions; i++)
+            {
+                int f = 0;
+                do
+                {
+                    Random r = new Random();
+                    f = r.Next(1, Enum.GetNames(typeof(Faction)).Length);
+                } while (factions.Contains((Faction)f));
+                factions.Add((Faction)f);
+            }
 
             foreach (Faction f in factions)
             {
@@ -84,9 +96,6 @@ namespace EmpireAttackServer
         /// </summary>
         public void LateUpdate()
         {
-            Console.ForegroundColor = ConsoleColor.DarkMagenta;
-            Console.WriteLine("GAME>>UPDATING MAP...");
-            Console.ForegroundColor = ConsoleColor.White;
             //Update Map population
             foreach (Faction f in Capitals.Keys)
             {
